@@ -2,6 +2,7 @@
 gbrg2rgb.py
 demosaic bayer filter of type 'gbrg' using nearest neighbor interpolation
 this is a poor way of doing it, but illustrates a very basic case
+Not guaranteed to be correct. It "looked right" in matplotlib 1.4.2.
 michael@scivision.co
 GPLv3+
 assumes uint8 raw bayer filtered gbrg input
