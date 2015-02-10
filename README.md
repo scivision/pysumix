@@ -1,5 +1,11 @@
 # sumix-smx-python-api
-API in Python that wraps C API. Requires WIndows (32 or 64 bit) and Python 32-bit
+API in Python that wraps C API. 
+
+Requires: WIndows (32 or 64 bit) and Python 32-bit
+
+Prereqs: Numpy, Scipy, Matplotlib.
+
+Optional: h5py (saving/loading HDF5 image sets).  Scikit-image: Saving multipage TIFFs using FreeImage.
 
 To acquire images (requires Windows 32 or 64 bit, with Python (2.7 or 3.4) 32-bit ):
   0. plug in Sumix SMX-M8XC color USB camera to your Windows PC
