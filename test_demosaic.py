@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ testing demosaic of images"""
 import h5py
-from demosaic import demosaic
+from demosaic import gbrg2rbg
 from numpy import empty,uint8
 from matplotlib.pyplot import figure,draw,pause, hist, show
 from os.path import expanduser
@@ -19,7 +19,7 @@ def main(fn,maxframe):
     hi = ax.imshow(empty((ddim[1],ddim[2]), dtype=uint8), vmin=0, vmax=255)
     ht = ax.set_title('')
     for i,d in enumerate(data):
-        proc = demosaic(d,pattern='rggb',clip=(0.,255.))
+        proc = gbrg2rbg(d)
         hi.set_data(proc)
         ht.set_text(str(i) + ' max: ' + str(proc.max()))
         draw(); pause(0.001)
