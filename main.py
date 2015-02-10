@@ -8,7 +8,7 @@ from sumixapi import Camera
 from matplotlib.pyplot import figure,draw,pause#, show
 from numpy import uint8, empty
 #
-from demosaic import demosaic
+from demosaic import gbrg2rbg
 
 def main(w,h,nframe,expreq, decimreq,verbose=False):
 #%% setup camera class
@@ -70,7 +70,7 @@ def freewheel(cam,hirw,xpix,ypix):
     try:
         while True:
             frame = cam.grabFrame(xpix,ypix)
-            frame = demosaic(frame,pattern='gbrg',clip=(0.,255.))
+            frame = gbrg2rbg(frame)
             hirw.set_data(frame)
             draw(); pause(0.001)
     except KeyboardInterrupt:
@@ -84,7 +84,7 @@ def fixedframe(nframe,cam,hirw,xpix,ypix):
         for i in range(nframe):
             frame = cam.grabFrame(xpix,ypix)
             frames[i,...] = frame
-            dframe = demosaic(frame,pattern='gbrg',clip=(0,255))
+            dframe = gbrg2rbg(frame)
             hirw.set_data(dframe)
             #hirw.cla()
             #hirw.imshow(dframe)
