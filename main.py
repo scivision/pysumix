@@ -10,7 +10,7 @@ from numpy import uint8, empty
 #
 from demosaic import gbrg2rbg
 
-def main(w,h,nframe,expreq, decimreq,verbose=False):
+def main(w,h,nframe,expreq, decimreq, color, set10bit, verbose=False):
 #%% setup camera class
     cam = Camera(w,h,decimreq) # creates camera object
     cam.openCamera()     # makes connection to camera
@@ -24,9 +24,16 @@ def main(w,h,nframe,expreq, decimreq,verbose=False):
         cdetex = cam.getCameraInfoEx()
         print(cdetex.HWModelID, cdetex.HWVersion, cdetex.HWSerial)
 
-        tenbit = cam.get10BitsOutput()
-        if tenbit==1:
-            print(' TEN BIT model enabled')
+    
+    if set10bit:  #FIXME just convert bool to byte instead
+        cam.set10BitsOutput(1)
+    else:
+        cam.set10BitsOutput(0)
+    tenbit = cam.get10BitsOutput()
+    if tenbit==1:
+        print(' TEN BIT mode enabled')
+    else: 
+        print(' EIGHT BIT mode enabled')
 #%% sensor configuration
     cam.setParams()
 
@@ -56,9 +63,9 @@ def main(w,h,nframe,expreq, decimreq,verbose=False):
 #%% start acquisition
     cam.startStream()
     if nframe is None:
-        frames = freewheel(cam,hirw,xpix,ypix)
+        frames = freewheel(cam,hirw,xpix,ypix, color)
     elif 0 < nframe < 200:
-        frames =fixedframe(nframe,cam,hirw,xpix,ypix)
+        frames =fixedframe(nframe,cam,hirw,xpix,ypix, color)
     else:
         exit('*** I dont know what to do with nframe=' + str(nframe))
 #%% shutdown camera
@@ -66,25 +73,33 @@ def main(w,h,nframe,expreq, decimreq,verbose=False):
     cam.closeCamera()
     return frames
 #%% ===========================
-def freewheel(cam,hirw,xpix,ypix):
+def freewheel(cam,hirw,xpix,ypix, color):
     try:
         while True:
             frame = cam.grabFrame(xpix,ypix)
-            frame = gbrg2rbg(frame)
-            hirw.set_data(frame)
+
+            if color:
+                dframe = gbrg2rbg(frame)
+            else:
+                dframe = frame
+            hirw.set_data(dframe)
             draw(); pause(0.001)
     except KeyboardInterrupt:
         print('halting acquisition')
 
     return frame
 
-def fixedframe(nframe,cam,hirw,xpix,ypix):
+def fixedframe(nframe,cam,hirw,xpix,ypix, color):
     frames = empty((nframe,ypix,xpix), dtype=uint8)
     try:
         for i in range(nframe):
             frame = cam.grabFrame(xpix,ypix)
             frames[i,...] = frame
-            dframe = gbrg2rbg(frame)
+            
+            if color:
+                dframe = gbrg2rbg(frame)
+            else:
+                dframe = frame
             hirw.set_data(dframe)
             #hirw.cla()
             #hirw.imshow(dframe)
@@ -97,15 +112,18 @@ def fixedframe(nframe,cam,hirw,xpix,ypix):
 if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser(description="Sumix Camera demo")
+    p.add_argument('-c','--color',help='use Bayer demosaic for color camera (display only, disk writing is raw)',action='store_true')
     p.add_argument('-d','--decim',help='decimation (binning)',type=int,default=1)
     p.add_argument('-e','--exposure',help='exposure set [ms]',type=float,default=None)
     p.add_argument('-n','--nframe',help='number of images to acquire',type=int,default=None)
     p.add_argument('-f','--file',help='name of tiff file to save',type=str,default=None)
     p.add_argument('-x','--width',help='width in pixels of ROI',type=int,default=1280)
     p.add_argument('-y','--height',help='height in pixels of ROI',type=int,default=1024)
+    p.add_argument('-t','--tenbit',help='selects 10-bit data mode (default 8-bit)',action='store_true')
     a = p.parse_args()
 
-    frames = main(a.width,a.height, a.nframe, a.exposure, a.decim)
+    frames = main(a.width,a.height, a.nframe, a.exposure, a.decim, a.color,a.tenbit)
+    
     if a.file is not None:
         from os.path import splitext
         ext = splitext(a.file)[1].lower()
