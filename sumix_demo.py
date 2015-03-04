@@ -63,9 +63,9 @@ def main(w,h,nframe,expreq, decimreq, color, set10bit, verbose=False):
 #%% start acquisition
     cam.startStream()
     if nframe is None:
-        frames = freewheel(cam,hirw,xpix,ypix, color)
+        frames = freewheel(cam,xpix,ypix, color,hirw)
     elif 0 < nframe < 200:
-        frames =fixedframe(nframe,cam,hirw,xpix,ypix, color)
+        frames =fixedframe(nframe,cam,xpix,ypix, color,hirw)
     else:
         exit('*** I dont know what to do with nframe=' + str(nframe))
 #%% shutdown camera
@@ -73,7 +73,7 @@ def main(w,h,nframe,expreq, decimreq, color, set10bit, verbose=False):
     cam.closeCamera()
     return frames
 #%% ===========================
-def freewheel(cam,hirw,xpix,ypix, color):
+def freewheel(cam,xpix,ypix, color,hirw):
     try:
         while True:
             frame = cam.grabFrame(xpix,ypix)
@@ -82,14 +82,16 @@ def freewheel(cam,hirw,xpix,ypix, color):
                 dframe = gbrg2rbg(frame)
             else:
                 dframe = frame
-            hirw.set_data(dframe)
-            draw(); pause(0.001)
+            
+            if hirw is not None:
+                hirw.set_data(dframe)
+                draw(); pause(0.001)
     except KeyboardInterrupt:
         print('halting acquisition')
 
     return frame
 
-def fixedframe(nframe,cam,hirw,xpix,ypix, color):
+def fixedframe(nframe,cam,xpix,ypix, color,hirw):
     frames = empty((nframe,ypix,xpix), dtype=uint8)
     try:
         for i in range(nframe):
@@ -100,10 +102,12 @@ def fixedframe(nframe,cam,hirw,xpix,ypix, color):
                 dframe = gbrg2rbg(frame)
             else:
                 dframe = frame
-            hirw.set_data(dframe)
-            #hirw.cla()
-            #hirw.imshow(dframe)
-            draw(); pause(0.001)
+            
+            if hirw is not None:
+                hirw.set_data(dframe)
+                #hirw.cla()
+                #hirw.imshow(dframe)
+                draw(); pause(0.001)
     except KeyboardInterrupt:
         print('halting acquisition per user Ctrl-C')
 
