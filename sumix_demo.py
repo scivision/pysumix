@@ -4,10 +4,11 @@ Demonstrator of Sumix camera
 michael@scivision.co
 GPLv3+ license
 """
-from sumixapi import Camera
 from matplotlib.pyplot import figure,draw,pause#, show
 from numpy import uint8, empty
+from os.path import splitext,expanduser
 #
+from sumixapi import Camera
 from demosaic import gbrg2rbg
 
 def main(w,h,nframe,expreq, decimreq, color, set10bit, verbose=False):
@@ -112,6 +113,17 @@ def fixedframe(nframe,cam,xpix,ypix, color,hirw):
         print('halting acquisition per user Ctrl-C')
 
     return frames
+    
+def saveframes(ofn,frames):
+    if ofn is not None and frames is not None:
+        ext = splitext(expanduser(ofn))[1].lower()
+        if ext[:4] == '.tif':
+            from skimage.io._plugins import freeimage_plugin as freeimg
+            freeimg.write_multipage(frames, ofn)
+        elif ext == '.h5':
+            import h5py
+            with h5py.File(ofn,libver='latest') as f:
+                f.create_dataset('/images',data=frames,compression='gzip')
 #%%
 if __name__ == '__main__':
     from argparse import ArgumentParser
@@ -128,13 +140,4 @@ if __name__ == '__main__':
 
     frames = main(a.width,a.height, a.nframe, a.exposure, a.decim, a.color,a.tenbit)
     
-    if a.file is not None:
-        from os.path import splitext
-        ext = splitext(a.file)[1].lower()
-        if ext[:4] == '.tif':
-            from skimage.io._plugins import freeimage_plugin as freeimg
-            freeimg.write_multipage(frames, a.file)
-        elif ext == '.h5':
-            import h5py
-            with h5py.File(a.file,libver='latest') as f:
-                f.create_dataset('/images',data=frames,compression='gzip')
+    saveframes(a.file,frames)
