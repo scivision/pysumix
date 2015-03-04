@@ -1,5 +1,5 @@
 # sumix-smx-python-api
-API in Python that wraps C API. 
+API in Python that wraps [C API](http://www.sumix.com/cameras/downloads.shtml). 
 
 Requires: WIndows (32 or 64 bit) and Python 32-bit
 
