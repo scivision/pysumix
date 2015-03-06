@@ -99,11 +99,12 @@ class Camera:
         return exp.value
 
     def setExposure(self, expreq): # set comera exposure in milliseconds
-        if not self.isopen:  exit("*** Camera connection is not open")
-
-        exp = ct.c_float()
-        rc = self.dll.CxSetExposureMs(self.h, ct.c_float(expreq), ct.byref(exp))
-        if rc==0: exit("*** Unable to set exposure")
+        if expreq is not None:
+            if not self.isopen:  exit("*** Camera connection is not open")
+    
+            exp = ct.c_float()
+            rc = self.dll.CxSetExposureMs(self.h, ct.c_float(expreq), ct.byref(exp))
+            if rc==0: exit("*** Unable to set exposure")
 
     def startStream(self): # begin streaming acquisition
         if not self.isopen:  exit("*** Camera connection is not open")

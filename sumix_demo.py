@@ -141,10 +141,12 @@ def saveframes(ofn,frames):
             #freeimg.write_multipage(frames, ofn)
             import tifffile
             print('tifffile write ' + ofn)
-            tifffile.imsave(ofn,frames,compress=6, description='my Sumix data',
-            extratags=[(65000,'s',None,'My custom tag #1',True),
-                       (65001,'s',None,'My custom tag #2',True),
-                       (65002,'f',2,[123456.789,9876.54321],True)])
+            tifffile.imsave(ofn,frames,compress=6, 
+                        photometric='minisblack', # to avoid writing RGB!
+                        description='my Sumix data',
+                        extratags=[(65000,'s',None,'My custom tag #1',True),
+                                   (65001,'s',None,'My custom tag #2',True),
+                                   (65002,'f',2,[123456.789,9876.54321],True)])
         elif ext == '.h5':
             import h5py
             with h5py.File(ofn,libver='latest') as f:
