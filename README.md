@@ -26,5 +26,5 @@ File description:
 
 ```sumixapi.py```: Wraps Sumix C Windows DLL in Python. Not every last function has been implemented or tested. Ask for more.
 
-```test_demosaic.py```: loads HDF5 saved files to playback video on screen.
+```test_demosaic.py```: loads TIFF or HDF5 saved files to playback video on screen.
   
