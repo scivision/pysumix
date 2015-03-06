@@ -87,7 +87,7 @@ def freewheel(cam,xpix,ypix, color,hirw):
                 dframe = frame
             
             if hirw is not None:
-                hirw.set_data(dframe)
+                hirw.set_data(dframe.astype(uint8))
                 draw(); pause(0.001)
     except KeyboardInterrupt:
         print('halting acquisition')
@@ -107,7 +107,7 @@ def fixedframe(nframe,cam,xpix,ypix, color,hirw):
                 dframe = frame
             
             if hirw is not None:
-                hirw.set_data(dframe)
+                hirw.set_data(dframe.astype(uint8))
                 #hirw.cla()
                 #hirw.imshow(dframe)
                 draw(); pause(0.001)
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     p.add_argument('-d','--decim',help='decimation (binning)',type=int,default=1)
     p.add_argument('-e','--exposure',help='exposure set [ms]',type=float,default=None)
     p.add_argument('-n','--nframe',help='number of images to acquire',type=int,default=None)
-    p.add_argument('-f','--file',help='name of tiff file to save',type=str,default=None)
+    p.add_argument('-f','--file',help='name of tiff file to save (non-demosaiced)',type=str,default=None)
     p.add_argument('-x','--width',help='width in pixels of ROI',type=int,default=1280)
     p.add_argument('-y','--height',help='height in pixels of ROI',type=int,default=1024)
     p.add_argument('-t','--tenbit',help='selects 10-bit data mode (default 8-bit)',action='store_true')
