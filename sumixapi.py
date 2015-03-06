@@ -34,7 +34,7 @@ class Camera:
         self.starty=0
         self.width = width
         self.height = height
-        self.decimation = decim
+        self.decimation = decim #1,2,3 are believed to work. 4 was scrambled?
         self.mirrorv=0
         self.mirrorh=0
 
