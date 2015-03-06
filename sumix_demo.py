@@ -4,14 +4,13 @@ Demonstrator of Sumix camera
 michael@scivision.co
 GPLv3+ license
 """
-from matplotlib.pyplot import figure,draw,pause#, show
 from numpy import uint8, empty
 from os.path import splitext,expanduser
 #
 from sumixapi import Camera
 from demosaic import gbrg2rbg
 
-def main(w,h,nframe,expreq, decimreq, color, set10bit, verbose=False):
+def main(w,h,nframe,expreq, decimreq, color, set10bit, preview, verbose=False):
 #%% setup camera class
     cam = Camera(w,h,decimreq) # creates camera object
     cam.openCamera()     # makes connection to camera
@@ -57,10 +56,13 @@ def main(w,h,nframe,expreq, decimreq, color, set10bit, verbose=False):
     exptime = cam.getExposure()
     print('exposure is {:0.3f}'.format(exptime) + ' ms.')
 #%% setup figure (for loter plotting)
-    figure(1).clf(); fgrw = figure(1);  axrw = fgrw.gca()
-    hirw = axrw.imshow(empty((ypix,xpix), dtype=uint8), origin='bottom',
-                       vmin=0, vmax=256, cmap='gray')
-    #fgrw.colorbar(hirw,ax=axrw)
+    if preview:
+        figure(1).clf(); fgrw = figure(1);  axrw = fgrw.gca()
+        hirw = axrw.imshow(empty((ypix,xpix), dtype=uint8), origin='bottom',
+                           vmin=0, vmax=256, cmap='gray')
+        #fgrw.colorbar(hirw,ax=axrw)
+    else:
+        hirw = None
 #%% start acquisition
     cam.startStream()
     if nframe is None:
@@ -142,8 +144,13 @@ if __name__ == '__main__':
     p.add_argument('-x','--width',help='width in pixels of ROI',type=int,default=1280)
     p.add_argument('-y','--height',help='height in pixels of ROI',type=int,default=1024)
     p.add_argument('-t','--tenbit',help='selects 10-bit data mode (default 8-bit)',action='store_true')
+    p.add_argument('-p','--preview',help='shows live preview of images acquired',action='store_true')
+    p.add_argument('-v','--verbose',help='more verbose feedback to user console',action='store_true')
     a = p.parse_args()
+    
+    if a.preview:
+        from matplotlib.pyplot import figure,draw,pause#, show
 
-    frames = main(a.width,a.height, a.nframe, a.exposure, a.decim, a.color,a.tenbit)
+    frames = main(a.width,a.height, a.nframe, a.exposure, a.decim, a.color, a.tenbit, a.preview, a.verbose)
     
     saveframes(a.file,frames)
