@@ -20,7 +20,7 @@ The demosaicing is primitive, using nearest neighbor interpolation. I have not v
 
 File description:
 =================
-```demosaic.py```: trivial nearest neighbor Bayer demosaic for 'gbrg' filters. Input/Output: 2-D 8-bit array
+```demosaic.py```: trivial nearest neighbor Bayer demosaic for 'gbrg' filters. Input/Output: 2-D uint8 or uint16 array
 
 ```sumix_demo.py```: Sumix SMX-M8XC camera Python image acquisition and recording program. Non-optimized program.
 
