@@ -3,12 +3,21 @@
 Demonstrator of Sumix camera
 michael@scivision.co
 GPLv3+ license
+to stop free run demo, on Windows press <esc> or <space> when focused on terminal window
+    on Linux, press <ctrl> c (sigint)
 """
 from numpy import uint8, empty
 from os.path import splitext,expanduser
+from platform import system
 #
 from sumixapi import Camera
 from demosaic import gbrg2rbg
+platf = system().lower()
+if platf=='windows':
+    from msvcrt import getwch, kbhit
+    windows = True
+else:
+    windows = False
 
 def main(w,h,nframe,expreq, decimreq, color, set10bit, preview, verbose=False):
 #%% setup camera class
@@ -89,6 +98,13 @@ def freewheel(cam,xpix,ypix, color,hirw):
             if hirw is not None:
                 hirw.set_data(dframe.astype(uint8))
                 draw(); pause(0.001)
+                
+            if windows and kbhit():
+                keyputf = getwch()
+                if keyputf == u'\x1b' or keyputf == u' ':
+                    print('halting acquisition due to user keypress')                    
+                    break
+                
     except KeyboardInterrupt:
         print('halting acquisition')
 
@@ -111,6 +127,7 @@ def fixedframe(nframe,cam,xpix,ypix, color,hirw):
                 #hirw.cla()
                 #hirw.imshow(dframe)
                 draw(); pause(0.001)
+                
     except KeyboardInterrupt:
         print('halting acquisition per user Ctrl-C')
 
