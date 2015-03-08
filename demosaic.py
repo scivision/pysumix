@@ -35,6 +35,9 @@ def gbrg2rbg(img,color=True):
         """http://pillow.readthedocs.org/en/latest/handbook/concepts.html"""
         demos = imresize(rgb,200,'nearest',"RGB")
     else: #gray
-        demos = rgb.mean(axis=2)
+        demos = rgb2gray(rgb)
 
     return demos
+
+def rgb2gray(rgb):
+    return rgb[...,:].dot([0.299,0.587,0.144]).astype(rgb.dtype)

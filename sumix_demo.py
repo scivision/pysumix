@@ -67,7 +67,8 @@ def main(w,h,nframe,expreq, decimreq, color, set10bit, preview, verbose=False):
 #%% setup figure (for loter plotting)
     if preview:
         figure(1).clf(); fgrw = figure(1);  axrw = fgrw.gca()
-        hirw = axrw.imshow(empty((ypix,xpix), dtype=uint8), origin='bottom',
+        hirw = axrw.imshow(empty((ypix,xpix), dtype=uint8),
+                           origin='upper', #this is consistent with Sumix chip and tiff
                            vmin=0, vmax=256, cmap='gray')
         #fgrw.colorbar(hirw,ax=axrw)
     else:
