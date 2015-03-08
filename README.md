@@ -3,7 +3,12 @@ API in Python that wraps [Sumix SMX M8X  C API](http://www.sumix.com/cameras/dow
 
 Requires: Windows XP/7/8/10 (32 or 64 bit) and Python 32-bit
 
-Prereqs: Numpy, Scipy, Matplotlib.
+API prereqs: ```conda install numpy```
+Full demo Prereqs: 
+```conda install numpy scipy matplotlib scikit-image h5py
+pip install tifffile
+```
+
 
 Optional: 
 * h5py (saving/loading HDF5 image sets).  
