@@ -8,7 +8,7 @@ assumes uint8 or uint16 raw bayer filtered gbrg input
 """
 from __future__ import division
 from numpy import uint16, dstack
-from scipy.misc import imresize
+from scipy.misc import imresize  #<-- requires scikit-image
 
 def gbrg2rbg(img):
    """ GBRG means the upper left corner of the image has four pixels arranged like
