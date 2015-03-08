@@ -89,7 +89,9 @@ def freewheel(cam,xpix,ypix, color,hirw):
     try:
         while True:
             frame = cam.grabFrame(xpix,ypix)
-            frame = gbrg2rbg(frame, color)
+
+            if color:
+                frame = gbrg2rbg(frame, color)
 
             if hirw is not None:
                 hirw.set_data(frame.astype(uint8))
@@ -115,7 +117,11 @@ def fixedframe(nframe,cam,xpix,ypix, color,hirw):
     try:
         for i in range(nframe):
             frame = cam.grabFrame(xpix,ypix)
-            frames[i,...] = gbrg2rbg(frame, color)
+
+            if color:
+                frames[i,...] = gbrg2rbg(frame, color)
+            else:
+                frames[i,...] = frame
 
             if hirw is not None:
                 hirw.set_data(frames[i,...].astype(uint8))
