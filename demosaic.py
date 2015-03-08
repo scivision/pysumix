@@ -16,6 +16,12 @@ def gbrg2rbg(img,color=True):
     green  blue
     red    green
     """
+    if img.ndim !=2:
+        exit('*** demosaic: for now, only 2-D numpy array is accepted')
+
+    if img.shape[0] % 2 or img.shape[1] % 2:
+        exit('*** demosaic: requires even-numbered number of pixels on both axes')
+
     g1 = img[0::2,0::2].astype(uint16)
     g2 = img[1::2,1::2].astype(uint16)
     r =  img[0::2,1::2]
