@@ -33,7 +33,7 @@ def main(w,h,nframe,expreq, decimreq, color, set10bit, preview, verbose=False):
         cdetex = cam.getCameraInfoEx()
         print(cdetex.HWModelID, cdetex.HWVersion, cdetex.HWSerial)
 
-    
+
     if set10bit:  #FIXME just convert bool to byte instead
         cam.set10BitsOutput(1)
     else:
@@ -41,7 +41,7 @@ def main(w,h,nframe,expreq, decimreq, color, set10bit, preview, verbose=False):
     tenbit = cam.get10BitsOutput()
     if tenbit==1:
         print(' TEN BIT mode enabled')
-    else: 
+    else:
         print(' EIGHT BIT mode enabled')
 #%% sensor configuration
     cam.setParams()
@@ -89,50 +89,44 @@ def freewheel(cam,xpix,ypix, color,hirw):
     try:
         while True:
             frame = cam.grabFrame(xpix,ypix)
+            frame = gbrg2rbg(frame, color)
 
-            if color:
-                dframe = gbrg2rbg(frame)
-            else:
-                dframe = frame
-            
             if hirw is not None:
-                hirw.set_data(dframe.astype(uint8))
+                hirw.set_data(frame.astype(uint8))
                 draw(); pause(0.001)
-                
+
             if windows and kbhit():
                 keyputf = getwch()
                 if keyputf == u'\x1b' or keyputf == u' ':
-                    print('halting acquisition due to user keypress')                    
+                    print('halting acquisition due to user keypress')
                     break
-                
+
     except KeyboardInterrupt:
         print('halting acquisition')
 
     return frame
 
 def fixedframe(nframe,cam,xpix,ypix, color,hirw):
-    frames = empty((nframe,ypix,xpix), dtype=uint8)
+    if color:
+        frames = empty((nframe,ypix,xpix,3), dtype=uint8)
+    else:
+        frames = empty((nframe,ypix,xpix), dtype=uint8)
+
     try:
         for i in range(nframe):
             frame = cam.grabFrame(xpix,ypix)
-            frames[i,...] = frame
-            
-            if color:
-                dframe = gbrg2rbg(frame)
-            else:
-                dframe = frame
-            
+            frames[i,...] = gbrg2rbg(frame, color)
+
             if hirw is not None:
-                hirw.set_data(dframe.astype(uint8))
+                hirw.set_data(frames[i,...].astype(uint8))
                 #hirw.cla()
                 #hirw.imshow(dframe)
                 draw(); pause(0.001)
-                
     except KeyboardInterrupt:
         print('halting acquisition per user Ctrl-C')
 
     return frames
-    
+
 def saveframes(ofn,frames):
     if ofn is not None and frames is not None:
         ext = splitext(expanduser(ofn))[1].lower()
@@ -141,7 +135,7 @@ def saveframes(ofn,frames):
             #freeimg.write_multipage(frames, ofn)
             import tifffile
             print('tifffile write ' + ofn)
-            tifffile.imsave(ofn,frames,compress=6, 
+            tifffile.imsave(ofn,frames,compress=6,
                         photometric='minisblack', # to avoid writing RGB!
                         description='my Sumix data',
                         extratags=[(65000,'s',None,'My custom tag #1',True),
@@ -166,10 +160,10 @@ if __name__ == '__main__':
     p.add_argument('-p','--preview',help='shows live preview of images acquired',action='store_true')
     p.add_argument('-v','--verbose',help='more verbose feedback to user console',action='store_true')
     a = p.parse_args()
-    
+
     if a.preview:
         from matplotlib.pyplot import figure,draw,pause#, show
 
     frames = main(a.width,a.height, a.nframe, a.exposure, a.decim, a.color, a.tenbit, a.preview, a.verbose)
-    
+
     saveframes(a.file,frames)
