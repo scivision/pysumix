@@ -35,7 +35,7 @@ def showimages(data,demosalg='ours'):
    # hi = ax.imshow(empty((ddim[1],ddim[2],3), dtype=uint8), vmin=0, vmax=255)
     #ht = ax.set_title('')
     for i,d in enumerate(data):
-        proc = demosaic(d,demosalg,1)
+        proc = demosaic(d,demosalg,4)
        # hi.set_data(proc)
        # ht.set_text('frame: ' + str(i) )
         ax.imshow(proc)

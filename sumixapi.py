@@ -275,7 +275,7 @@ class Convert:
         # this is a BGR array if color
         dimg = asarray(outbuffer).reshape((h,w,3), order='C')
 
-        if bayerint == 0: #monochrome
+        if bayerint in (0,4): #monochrome
             dimg = dimg[...,0] # all pages identical
         else:
             drot = dimg[...,::-1] #reverse colors, BGR -> RGB
