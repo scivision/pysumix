@@ -34,7 +34,10 @@ class Camera:
         self.starty=0
         self.width = width
         self.height = height
-        self.decimation = decim #1,2,3 are believed to work. 4 was scrambled?
+        if decim is None or decim in tuple(range(-4,9)):
+            self.decimation = decim #1,2,3 are believed to work. 4 was scrambled?
+        else:
+            print('** ignoring not allowed decim=' + str(decim))
         self.mirrorv=0
         self.mirrorh=0
 
@@ -62,7 +65,8 @@ class Camera:
             exit('*** I can only accept 1->24MHz or 0->12MHz to set sensor frequency')
 
         rc = self.dll.CxSetFrequency(self.h,freq) #not ct.byref()
-        if rc == 0: exit("*** Unable to set sensor frequency")
+        if rc == 0:
+            print("** Unable to set sensor frequency ")
 
     def getFrequency(self):
         if not self.isopen: exit("*** Camera connection is not open")
@@ -85,7 +89,9 @@ class Camera:
 
         emin = ct.c_float(); emax = ct.c_float()
         rc = self.dll.CxGetExposureMinMaxMs(self.h, ct.byref(emin), ct.byref(emax))
-        if rc == 0: exit("*** Unable to get min/max exposure")
+        if rc == 0:
+            print("** Unable to get min/max exposure")
+            return None, None
 
         return emin.value, emax.value
 
@@ -94,20 +100,37 @@ class Camera:
 
         exp = ct.c_float()
         rc = self.dll.CxGetExposureMs(self.h, ct.byref(exp))
-        if rc==0: exit("*** Unable to get exposure")
+        if rc==0:
+            print("*** Unable to get exposure")
+            return None
 
         return exp.value
 
     def setExposure(self, expreq): # set comera exposure in milliseconds
         if expreq is not None:
             if not self.isopen:  exit("*** Camera connection is not open")
-    
+            if expreq<0: exit('*** exposure request must be a positive number')
+
             exp = ct.c_float()
             rc = self.dll.CxSetExposureMs(self.h, ct.c_float(expreq), ct.byref(exp))
-            if rc==0: exit("*** Unable to set exposure")
+            if rc==0:
+                print("** Unable to set exposure=" + str(expreq))
+
+    def setAllGain(self, gainreq): #sets gain for all colors simultaneously
+        if gainreq is not None:
+            if not self.isopen:  exit("*** Camera connection is not open")
+
+            gain = ct.c_int32(gainreq)
+            rc = self.dll.CxSetAllGain(self,gain)
+            if rc==0:
+                print('** unable to set gain ' + str(gainreq))
 
     def startStream(self): # begin streaming acquisition
         if not self.isopen:  exit("*** Camera connection is not open")
+
+        cparam = self.getParams()
+        self.width = cparam.Width
+        self.height = cparam.Height
 
         return self.dll.CxSetStreamMode(self.h, ct.c_byte(1))
 
@@ -116,34 +139,38 @@ class Camera:
 
         return self.dll.CxSetStreamMode(self.h, ct.c_byte(0))
 
-    def grabFrame(self,xpix,ypix): #grab latest frame in stream
+    def grabFrame(self): #grab latest frame in stream
         """ for SMX-M8XC, the "color" camera passes back a grayscale image that was
          Bayer filtered--you'll need to demosaic! """
         if not self.isopen:  exit("*** Camera connection is not open")
 
-        Nbuffer = xpix*ypix
+        Nbuffer = self.width * self.height
         imbuffer = (ct.c_ubyte * Nbuffer)()
         bufferbytes = Nbuffer # each pixel is 1 byte
 
         rc = self.dll.CxGrabVideoFrame(self.h, ct.byref(imbuffer), bufferbytes)
-        if rc==0: exit("*** problem getting frame, return code " + str(rc))
+        if rc==0:
+            print("** problem getting frame, return code " + str(rc))
+            return None
 
-        out = asarray(imbuffer).reshape((ypix,xpix), order='C')
-        return out
+        return asarray(imbuffer).reshape((self.height,self.width), order='C')
 
     def get10BitsOutput(self): #8 or 10 bits
         if not self.isopen:  exit("*** Camera connection is not open")
 
         getbit = ct.c_byte()
         rc = self.dll.CxGet10BitsOutput(self.h, ct.byref(getbit))
-        if rc==0:  exit("*** Error getting bit mode")
+        if rc==0:
+            print("** Error getting bit mode")
         return getbit.value
 
     def set10BitsOutput(self,useten): #0=8 bit, 1=10bit
+        if not useten in (0,1): exit('*** valid input is 0 for 8-bit, or 1 for 10-bit')
         if not self.isopen:  exit("*** Camera connection is not open")
 
         rc = self.dll.CxSet10BitsOutput(self.h, ct.c_byte(useten))
-        if rc==0: exit("*** Error setting bit mode")
+        if rc==0:
+            print("** Error setting bit mode")
 
 
     def setParams(self): #Set camera params
@@ -182,6 +209,30 @@ class Camera:
         self.dll.CxGetCameraInfo(self.h, ct.byref(details))
 
         return details
+
+    def BayerToRgb(self,bayerimg, bayerint):
+        if bayerimg is None: return None
+
+        if not bayerint in range(6):
+            print('** bayer mode must be in 0,1,2,3,4,5')
+            print('0: monochrome , 1: nearest neighbor, 2: bilinear' +
+            '3:Laplacian, 4:Real Monochrome, 5:Bayer Average')
+            return None
+
+        """ this function not yet tested"""
+        Width = ct.c_int32(self.width)
+        Height = ct.c_int32(self.height)
+        BayerAlg = ct.c_int32(bayerint)
+
+        Nbuffer = self.width * self.height
+        inbuffer = (ct.c_ubyte * Nbuffer)()
+        outbuffer = (ct.c_ubyte * Nbuffer)()
+
+        out = self.dll.CxBayerToRgb(ct.byref(inbuffer),
+                                   Width, Height, BayerAlg,
+                                   ct.byref(outbuffer))
+
+        return asarray(out).reshape((self.height,self.width), order='C')
 
 """
 https://docs.python.org/3/library/ctypes.html#ctypes.Structure

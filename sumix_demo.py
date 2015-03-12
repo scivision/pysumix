@@ -89,7 +89,7 @@ def main(w,h,nframe,expreq, decimreq, color, set10bit, preview, verbose=False):
 def freewheel(cam,xpix,ypix, color,hirw):
     try:
         while True:
-            frame = cam.grabFrame(xpix,ypix)
+            frame = cam.grabFrame()
 
             if color:
                 frame = gbrg2rgb(frame, color)
@@ -117,7 +117,7 @@ def fixedframe(nframe,cam,xpix,ypix, color,hirw):
 
     try:
         for i in range(nframe):
-            frame = cam.grabFrame(xpix,ypix)
+            frame = cam.grabFrame()
 
             if color:
                 frames[i,...] = gbrg2rgb(frame, color)
