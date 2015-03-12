@@ -278,5 +278,5 @@ class Convert:
         if bayerint in (0,4): #monochrome
             dimg = dimg[...,0] # all pages identical
         else:
-            drot = dimg[...,::-1] #reverse colors, BGR -> RGB
-        return drot
+            dimg = dimg[...,::-1] #reverse colors, BGR -> RGB
+        return dimg
