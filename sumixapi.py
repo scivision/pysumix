@@ -10,7 +10,7 @@ michael@scivision.co
 GPLv3+ license
 """
 import ctypes as ct
-from numpy import asarray, roll, empty_like
+from numpy import asarray
 from os.path import join,isfile
 from platform import system
 
@@ -278,6 +278,5 @@ class Convert:
         if bayerint == 0: #monochrome
             dimg = dimg[...,0] # all pages identical
         else:
-            #dimg = roll(dimg,-2,axis=2) # this roll necessary to get the colors in the right order R,G,B
             drot = dimg[...,::-1] #reverse colors, BGR -> RGB
         return drot
