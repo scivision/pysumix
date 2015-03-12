@@ -38,7 +38,10 @@ def showimages(data,demosalg='ours'):
         proc = demosaic(d,demosalg,4)
        # hi.set_data(proc)
        # ht.set_text('frame: ' + str(i) )
-        ax.imshow(proc)
+        if proc.ndim==2: #monochrome
+            ax.imshow(proc,cmap='gray')
+        else:
+            ax.imshow(proc)
         draw(); pause(0.001)
 
     ax2 = figure(2).gca()
