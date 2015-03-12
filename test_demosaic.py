@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """ testing demosaic of images"""
-from demosaic import gbrg2rbg
+from demosaic import gbrg2rgb
 from numpy import empty,uint8, atleast_3d
 from matplotlib.pyplot import figure,draw,pause, hist, show
 from os.path import expanduser,splitext
@@ -32,7 +32,7 @@ def main(fn):
     hi = ax.imshow(empty((ddim[1],ddim[2]), dtype=uint8), vmin=0, vmax=255)
     ht = ax.set_title('')
     for i,d in enumerate(data):
-        proc = gbrg2rbg(d)
+        proc = gbrg2rgb(d)
         hi.set_data(proc)
         ht.set_text('frame: ' + str(i) )
         draw(); pause(0.001)

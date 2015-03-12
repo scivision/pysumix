@@ -11,7 +11,7 @@ from os.path import splitext,expanduser
 from platform import system
 #
 from sumixapi import Camera
-from demosaic import gbrg2rbg
+from demosaic import gbrg2rgb
 platf = system().lower()
 if platf=='windows':
     from msvcrt import getwch, kbhit
@@ -92,7 +92,7 @@ def freewheel(cam,xpix,ypix, color,hirw):
             frame = cam.grabFrame(xpix,ypix)
 
             if color:
-                frame = gbrg2rbg(frame, color)
+                frame = gbrg2rgb(frame, color)
 
             if hirw is not None:
                 hirw.set_data(frame.astype(uint8))
@@ -120,7 +120,7 @@ def fixedframe(nframe,cam,xpix,ypix, color,hirw):
             frame = cam.grabFrame(xpix,ypix)
 
             if color:
-                frames[i,...] = gbrg2rbg(frame, color)
+                frames[i,...] = gbrg2rgb(frame, color)
             else:
                 frames[i,...] = frame
 
