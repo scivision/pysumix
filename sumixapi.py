@@ -10,7 +10,7 @@ michael@scivision.co
 GPLv3+ license
 """
 import ctypes as ct
-from numpy import asarray
+from numpy import asarray, roll, empty_like
 from os.path import join,isfile
 from platform import system
 
@@ -210,30 +210,6 @@ class Camera:
 
         return details
 
-    def BayerToRgb(self,bayerimg, bayerint):
-        if bayerimg is None: return None
-
-        if not bayerint in range(6):
-            print('** bayer mode must be in 0,1,2,3,4,5')
-            print('0: monochrome , 1: nearest neighbor, 2: bilinear' +
-            '3:Laplacian, 4:Real Monochrome, 5:Bayer Average')
-            return None
-
-        """ this function not yet tested"""
-        Width = ct.c_int32(self.width)
-        Height = ct.c_int32(self.height)
-        BayerAlg = ct.c_int32(bayerint)
-
-        Nbuffer = self.width * self.height
-        inbuffer = (ct.c_ubyte * Nbuffer)()
-        outbuffer = (ct.c_ubyte * Nbuffer)()
-
-        out = self.dll.CxBayerToRgb(ct.byref(inbuffer),
-                                   Width, Height, BayerAlg,
-                                   ct.byref(outbuffer))
-
-        return asarray(out).reshape((self.height,self.width), order='C')
-
 """
 https://docs.python.org/3/library/ctypes.html#ctypes.Structure
 """
@@ -258,3 +234,50 @@ class _TCameraInfoEx(ct.Structure):
     _fields_ = [("HWModelID",ct.c_ushort),
                 ("HWVersion",ct.c_ushort),
                 ("HWSerial", ct.c_ulong)]
+
+
+class Convert:
+    def __init__(self, dll=DLL):
+        self.dll = ct.windll.LoadLibrary(dll)
+
+    def BayerToRgb(self,bayerimg, bayerint):
+        if bayerimg is None: return None
+
+        if bayerimg.ndim != 2:
+            print('only accepts 2-D mosaiced images')
+            return None
+
+        if not bayerint in range(6):
+            print('** bayer mode must be in 0,1,2,3,4,5')
+            print('0: monochrome , 1: nearest neighbor, 2: bilinear' +
+            '3:Laplacian, 4:Real Monochrome, 5:Bayer Average')
+            return None
+
+        """
+        note, even if selecting 0: Monochrome, the image returned is I X J X 3
+        """
+        h,w = bayerimg.shape
+
+        Width = ct.c_int32(w)
+        Height = ct.c_int32(h)
+        BayerAlg = ct.c_int32(bayerint)
+
+        Nbuffer = w * h
+        inbuffer = (ct.c_ubyte * Nbuffer)(*bayerimg.ravel(order='C'))
+        outbuffer = (ct.c_ubyte * Nbuffer*3)()
+
+        rc = self.dll.CxBayerToRgb(ct.byref(inbuffer),
+                                   Width, Height, BayerAlg,
+                                   ct.byref(outbuffer))
+        if rc==0:
+            print('could not convert image'); return None
+
+        # this is a BGR array if color
+        dimg = asarray(outbuffer).reshape((h,w,3), order='C')
+
+        if bayerint == 0: #monochrome
+            dimg = dimg[...,0] # all pages identical
+        else:
+            #dimg = roll(dimg,-2,axis=2) # this roll necessary to get the colors in the right order R,G,B
+            drot = dimg[...,::-1] #reverse colors, BGR -> RGB
+        return drot

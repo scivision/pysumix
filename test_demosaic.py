@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """ testing demosaic of images"""
-from demosaic import gbrg2rgb
-from numpy import empty,uint8, atleast_3d
+from demosaic import demosaic
 from matplotlib.pyplot import figure,draw,pause, hist, show
 from os.path import expanduser,splitext
 
-def main(fn):
+def readimages(fn):
     fn = expanduser(fn)
     ext = splitext(fn)[1].lower()
     if ext == '.h5':
@@ -17,24 +16,29 @@ def main(fn):
         data = imread(fn)
     else:
         exit('unrecognized file type ' + ext)
-        
+
     #keep axes in preferred order
     if data.ndim == 2:
-        data = atleast_3d(data).transpose((2,0,1))
+        data = data[None,:,:]
     elif data.ndim ==3:
         pass
     else:
         exit('unknown number of dimensions {:0d}'.format(data.ndim))
-    ddim = data.shape
+    return data
+
+def showimages(data,demosalg='ours'):
+    #ddim = data.shape
 
     fg = figure()
     ax = fg.gca()
-    hi = ax.imshow(empty((ddim[1],ddim[2]), dtype=uint8), vmin=0, vmax=255)
-    ht = ax.set_title('')
+    #without vmin, vmax it doesn't show anything!
+   # hi = ax.imshow(empty((ddim[1],ddim[2],3), dtype=uint8), vmin=0, vmax=255)
+    #ht = ax.set_title('')
     for i,d in enumerate(data):
-        proc = gbrg2rgb(d)
-        hi.set_data(proc)
-        ht.set_text('frame: ' + str(i) )
+        proc = demosaic(d,demosalg,1)
+       # hi.set_data(proc)
+       # ht.set_text('frame: ' + str(i) )
+        ax.imshow(proc)
         draw(); pause(0.001)
 
     ax2 = figure(2).gca()
@@ -46,9 +50,14 @@ def main(fn):
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
+
     p = ArgumentParser(description='demosaicking test')
     p.add_argument('file',help='file to load',type=str)
     a=p.parse_args()
 
-    main(a.file)
+    data = readimages(a.file) #DONT'T squeeze, so that we can iterate
+    #showimages(data,'ours')
+
+    showimages(data,'sumix')
+
 

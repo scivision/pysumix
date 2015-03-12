@@ -14,8 +14,24 @@ output:
 same uint8 or uint16 shape as inpout
 """
 from __future__ import division
-import numpy as np
-from scipy.ndimage.interpolation import zoom
+try:
+    import numpy as np
+    from scipy.ndimage.interpolation import zoom
+except ImportError:
+    print('If youre on Windows, be sure your PATH environment variable includes your Python DLLs directory.')
+    print('E.g. for Anaconda on Windows installed to C:\Anaconda, you should have C:\Anaconda\DLLs on your Windows PATH.')
+    exit()
+
+try:
+    from sumixapi import Convert
+except ImportError:
+    print("you may not have the Sumix API installed. Try the method='ours' to fallback to non-sumix demosaic")
+
+def demosaic(img,method='ours',alg=1):
+    if method.lower()=='sumix':
+        return Convert().BayerToRgb(img,alg)
+    else:
+        return gbrg2rgb(img)
 
 def gbrg2rgb(img,color=True):
     """ GBRG means the upper left corner of the image has four pixels arranged like
@@ -23,9 +39,11 @@ def gbrg2rgb(img,color=True):
     red    green
     """
     if img.ndim !=2:
+        print(img.shape)
         exit('*** demosaic: for now, only 2-D numpy array is accepted')
 
     if img.shape[0] % 2 or img.shape[1] % 2:
+        print(img.shape)
         exit('*** demosaic: requires even-numbered number of pixels on both axes')
 
     if not img.dtype in (np.uint8, np.uint16):
@@ -54,7 +72,7 @@ def rgb2gray(rgb):
 if __name__ == '__main__':
     from matplotlib.pyplot import figure,show
     x = (np.random.rand(10,10)*65535).astype(np.uint16)
-    y = gbrg2rgb(x)
+    y = demosaic(x)
     print(y.shape)
     print(y.dtype)
 
