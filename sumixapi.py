@@ -33,9 +33,7 @@ class Camera:
         self.isopen = False
         self.h = None
 
-        self.openCamera()     # makes connection to camera
-
-#        self.info = self.getCameraInfo() This function can cause crashes
+        #self.info = self.getCameraInfo() #This function can cause crashes
 #%% enact initialized settings from abvoe
         self.setParams(width,height,decim,startx,starty,mirrorv,mirrorh)
 
@@ -65,8 +63,6 @@ class Camera:
             print(' EIGHT BIT mode enabled')
 #%%
     def setParams(self,width,height,decim,startx,starty, mirrorv, mirrorh): #Set camera params
-        if not self.isopen:  exit("*** Camera connection is not open")
-
         old = self.getParams()
 
         params = _TFrameParams()
@@ -105,6 +101,7 @@ class Camera:
         else:
             params.MirrorH = ct.c_byte(old.MirrorH)
 
+        self.openCamera()
         rc = self.dll.CxSetScreenParams(self.h, ct.byref(params))
         if rc == 0:
             print('** CxSetScreenParams: problem setting parameter choices')
@@ -112,11 +109,11 @@ class Camera:
             rc = self.dll.CxActivateScreenParams(self.h)
             if rc == 0:
                 print('** CxActivateScreenParams: Problem activating parameters')
+        self.closeCamera()
 #%%
     def openCamera(self, cid=None): #attempt initial connection to camera
         if not self.isopen:
             self.h = self.dll.CxOpenDevice(cid)
-            print('camera connection opened')
         if self.h == -1:
             exit("*** Camera not found on open attempt with " + str(DLL))
         else:
@@ -131,33 +128,34 @@ class Camera:
     def closeCamera(self): #final closing of camera connection
         if self.isopen:
             self.dll.CxCloseDevice(self.h) #no return code
-            print('camera connection CLOSED')
             self.h = None
         self.isopen = False
 
     def setFrequency(self,freqbyte):
-        if not self.isopen: exit("*** Camera connection is not open")
-
         if freqbyte == 1: #24MHz
             freq = ct.c_byte(1)
         elif freqbyte == 0: #12MHz
             freq = ct.c_byte(0)
         else:
-            exit('*** I can only accept 1->24MHz or 0->12MHz to set sensor frequency')
+            print('*** I can only accept 1->24MHz or 0->12MHz to set sensor frequency')
+            return
 
+        self.openCamera()
         rc = self.dll.CxSetFrequency(self.h,freq) #not ct.byref()
         if rc == 0:
             print("** CxSetFrequency: Unable to set sensor frequency ")
+        self.closeCamera()
 
     def getFrequency(self):
-        if not self.isopen: exit("*** Camera connection is not open")
-
         freq = ct.c_byte()
+        self.openCamera()
         rc = self.dll.CxGetFrequency(self.h, ct.byref(freq))
-        freq = freq.value
+        self.closeCamera()
         if rc == 0:
             print("*** CxGetFrequency: Unable to get sensor frequency")
             return None
+
+        freq = freq.value
 
         if freq==0:
             return '12 MHz'
@@ -168,10 +166,10 @@ class Camera:
             return None
 
     def getExposureMinMax(self):
-        if not self.isopen:  exit("*** Camera connection is not open")
-
         emin = ct.c_float(); emax = ct.c_float()
+        self.openCamera()
         rc = self.dll.CxGetExposureMinMaxMs(self.h, ct.byref(emin), ct.byref(emax))
+        self.closeCamera()
         if rc == 0:
             print("** CxGetExposureMinMaxMs: Unable to get min/max exposure")
             return None, None
@@ -179,10 +177,10 @@ class Camera:
         return emin.value, emax.value
 
     def getExposure(self): # get comera exposure in milliseconds
-        if not self.isopen:  exit("*** Camera connection is not open")
-
         exp = ct.c_float()
+        self.openCamera()
         rc = self.dll.CxGetExposureMs(self.h, ct.byref(exp))
+        self.closeCamera()
         if rc==0:
             print("*** CxGetExposureMs: Unable to get exposure")
             return None
@@ -191,50 +189,51 @@ class Camera:
 
     def setExposure(self, expreq): # set comera exposure in milliseconds
         if expreq is not None:
-            if not self.isopen:  exit("*** Camera connection is not open")
             if expreq<0:
                 print('** ignoring exposure request, it must be a positive number')
                 return
 
             exp = ct.c_float()
+            self.openCamera()
             rc = self.dll.CxSetExposureMs(self.h, ct.c_float(expreq), ct.byref(exp))
+            self.closeCamera()
             if rc==0:
                 print("** CxSetExposureMs: Unable to set exposure=" + str(expreq))
 
     def setAllGain(self, gainreq): #sets gain for all colors simultaneously
         if gainreq is not None:
-            if not self.isopen:  exit("*** Camera connection is not open")
 
             gain = ct.c_int32(gainreq)
+            self.openCamera()
             rc = self.dll.CxSetAllGain(self,gain)
+            self.closeCamera()
             if rc==0:
                 print('** unable to set gain ' + str(gainreq))
 
     def startStream(self): # begin streaming acquisition
-        if not self.isopen:  exit("*** Camera connection is not open")
         print('starting camera stream ')
-
+        self.openCamera()
         rc = self.dll.CxSetStreamMode(self.h, ct.c_byte(1))
+        #leave connection open for streaming
         if rc==0:
             print('** CxSetStreamMode: unable to start camera stream')
 
     def stopStream(self): # end streaming acquisition
-        if not self.isopen:  exit("*** Camera connection is not open")
         print('stopping camera stream')
-
+        self.openCamera()
         rc=self.dll.CxSetStreamMode(self.h, ct.c_byte(0))
+        self.closeCamera()
         if rc==0:
             print('** CxSetStreamMode: unable to stop camera stream')
 
     def grabFrame(self): #grab latest frame in stream
         """ for SMX-M8XC, the "color" camera passes back a grayscale image that was
          Bayer filtered--you'll need to demosaic! """
-        if not self.isopen:  exit("*** Camera connection is not open")
-
         Nbuffer = self.xpix * self.ypix
         imbuffer = (ct.c_ubyte * Nbuffer)()
         bufferbytes = Nbuffer # each pixel is 1 byte
 
+        if not self.isopen: self.openCamera()
         rc = self.dll.CxGrabVideoFrame(self.h, ct.byref(imbuffer), bufferbytes)
         if rc==0:
             print("** CxGrabVideoFrame: problem getting frame, return code " + str(rc))
@@ -243,10 +242,10 @@ class Camera:
         return asarray(imbuffer).reshape((self.ypix,self.xpix), order='C')
 
     def get10BitsOutput(self): #8 or 10 bits
-        if not self.isopen:  exit("*** Camera connection is not open")
-
         getbit = ct.c_byte()
+        self.openCamera()
         rc = self.dll.CxGet10BitsOutput(self.h, ct.byref(getbit))
+        self.closeCamera()
         if rc==0:
             print("** CxGet10BitsOutput: Error getting bit mode")
             return None
@@ -255,38 +254,45 @@ class Camera:
     def set10BitsOutput(self,useten): #0=8 bit, 1=10bit
         if not useten in (0,1):
             print('*** valid input is 0 for 8-bit, or 1 for 10-bit')
-        if not self.isopen:  exit("*** Camera connection is not open")
+            return
 
+        self.openCamera()
         rc = self.dll.CxSet10BitsOutput(self.h, ct.c_byte(useten))
+        self.closeCamera()
         if rc==0:
             print("** CxSet10BitsOutput: Error setting bit mode")
 
     def getParams(self):
-        if not self.isopen:  exit("*** Camera connection is not open")
-
         params = _TFrameParams()
-        self.dll.CxGetScreenParams(self.h, ct.byref(params))
-
+        self.openCamera()
+        rc = self.dll.CxGetScreenParams(self.h, ct.byref(params))
+        self.closeCamera()
+        if rc==0:
+            print('** CxGetScreenParams: error getting params')
+            return None
         return params
 
     def getCameraInfoEx(self):
-        if not self.isopen:  exit("*** Camera connection is not open")
-
-        details = _TCameraInfoEx()
-        self.dll.CxGetCameraInfoEx(self.h, ct.byref(details))
-
-        return details
+        det = _TCameraInfoEx()
+        self.openCamera()
+        rc = self.dll.CxGetCameraInfoEx(self.h, ct.byref(det))
+        self.closeCamera()
+        if rc==0:
+            print('** CxGetCameraInfoEx: error getting camera info')
+            return None
+        return det
 
     def getCameraInfo(self):
-        if not self.isopen:  exit("*** Camera connection is not open")
+        det = _TCameraInfo()
+        self.openCamera()
+        rc = self.dll.CxGetCameraInfo(self.h, ct.byref(det))
+        self.closeCamera()
+        if rc == 0:
+            print('** CxGetCameraInfo: Error getting camera info')
+            return None
+        #print((det.MaxWidth, det.MaxHeight))
 
-        details = _TCameraInfo()
-        self.dll.CxGetCameraInfo(self.h, ct.byref(details))
-        print(details.MaxWidth)
-        print(details.MaxHeight)
-        print(details.DeviceName)
-
-        return details
+        return det
 
 """
 https://docs.python.org/3/library/ctypes.html#ctypes.Structure
