@@ -11,7 +11,6 @@ conda install numpy scipy matplotlib scikit-image h5py
 pip install tifffile
 ```
 
-
 Optional: 
 * h5py (saving/loading HDF5 image sets).  
 * tifffile (saving/loading multipage TIFF with custom tags)
@@ -21,15 +20,13 @@ To acquire color images:
   1. at command prompt, type ```python sumix_demo.py -x 640 -y 480 -e 20``` that sets your exposure to 20ms, with a frame size of 640x480.
   2. you will see a live demosaiced display. 
 
-The program has the option to save as multipage TIFF or HDF5 by using the ```-f``` command line option with a filename. E.g. ```python sumix_demo.py -f blah.h5```
-
-The demosaicing is primitive, using nearest neighbor interpolation. I have not verified the correctness of this simple algorithm, only that it "looks right".
+The program has the option to save as multipage TIFF or HDF5 by using the ```-f``` command line option with a filename. E.g. ```python sumix_demo.py -f blah.tif```
 
 File description:
 =================
-```demosaic.py```: trivial nearest neighbor Bayer demosaic for 'gbrg' filters. Input/Output: 2-D uint8 or uint16 array
+```demosaic.py```:  Bayer demosaic for 'gbrg' filters. Input/Output: 2-D uint8 or uint16 array
 
-```sumix_demo.py```: Sumix SMX-M8XC camera Python image acquisition and recording program. Non-optimized program.
+```sumix_demo.py```: Sumix SMX-M8XC camera Python image acquisition and recording test program.
 
 ```sumixapi.py```: Wraps Sumix C Windows DLL in Python. Not every last function has been implemented or tested. Ask for more.
 
