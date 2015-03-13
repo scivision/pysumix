@@ -62,7 +62,7 @@ def main(w,h,nframe,expos, gain, decim, color, tenbit, preview, verbose=False):
 #%% shutdown camera
     cam.stopStream()
 
-    return frames
+    return frames, exptime, rgain
 #%% ===========================
 def freewheel(cam, color,hirw):
     try:
@@ -115,7 +115,7 @@ def fixedframe(nframe,cam, color,hirw):
 
     return frames
 
-def saveframes(ofn,frames,color):
+def saveframes(ofn,frames,color,exptime,gain):
     if ofn is not None and frames is not None:
         ext = splitext(expanduser(ofn))[1].lower()
         if ext[:4] == '.tif':
@@ -129,13 +129,13 @@ def saveframes(ofn,frames,color):
             print('tifffile write ' + ofn)
 
             pho = 'rgb' if color else 'minisblack'
-
             tifffile.imsave(ofn,frames,compress=6,
                         photometric=pho,
-                        description='my Sumix data',
-                        extratags=[(65000,'s',None,'My custom tag #1',True),
-                                   (65001,'s',None,'My custom tag #2',True),
-                                   (65002,'f',2,[123456.789,9876.54321],True)])
+                        description=('exposure_sec {:0.3f}'.format(exptime/1000) +
+                                     ',  gains_(g1 red g2 blue) '+str(list(gain.values()))  ),
+                        extratags=[(33434,'f',1,exptime,True),
+                                   (41991,'f',4,list(gain.values()),True),])
+                                   #(65002,'f',2,[123456.789,9876.54321],True)])
 
         elif ext == '.h5':
             try:
@@ -167,6 +167,7 @@ if __name__ == '__main__':
     if a.preview:
         from matplotlib.pyplot import figure,draw,pause#, show
 
-    frames = main(a.width,a.height, a.nframe, a.exposure, a.gain, a.decim, a.color, a.tenbit, a.preview, a.verbose)
+    frames,exptime,gain = main(a.width,a.height, a.nframe, a.exposure, a.gain,
+                          a.decim, a.color, a.tenbit, a.preview, a.verbose)
 
-    saveframes(a.file,frames,a.color)
+    saveframes(a.file,frames,a.color, exptime,gain)

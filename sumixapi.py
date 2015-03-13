@@ -130,7 +130,7 @@ class Camera:
             self.dll.CxCloseDevice(self.h) #no return code
             self.h = None
         self.isopen = False
-
+#%%
     def setFrequency(self,freqbyte):
         if freqbyte == 1: #24MHz
             freq = ct.c_byte(1)
@@ -164,7 +164,7 @@ class Camera:
         else:
             print('** CxGetFrequency: unknown response to CxGetFrequency')
             return None
-
+#%%
     def getExposureMinMax(self):
         emin = ct.c_float(); emax = ct.c_float()
         self.openCamera()
@@ -199,7 +199,7 @@ class Camera:
             self.closeCamera()
             if rc==0:
                 print("** CxSetExposureMs: Unable to set exposure=" + str(expreq))
-
+#%%
     def getGain(self):
         gg1 = ct.c_int32()
         gr  = ct.c_int32()
@@ -227,10 +227,39 @@ class Camera:
             else:
                 print(' 160 >= gain >= 0')
 #%%
+    def setBrightnessContrastGamma(self,bright,contrast,gamma):
+        if bright is not None and contrast is not None and gamma is not None:
+            if -127<=bright<=127 and -127<=contrast<=127 and -127<=gamma<=127:
+                b = ct.c_int32(bright)
+                c = ct.c_int32(contrast)
+                g = ct.c_int32(gamma)
+                self.openCamera()
+                rc = self.dll.CxSetBrightnessContrastGamma(self.h,b,c,g)
+                self.closeCamera()
+                if rc==0:
+                    print('** CxSetBrightnessContrastGamma: problem setting')
+            else:
+                print('brightness, contrast, and gamma must be in -127..127')
+#%%
+    def getConversionTable(self):
+        """
+        gets mapping from 10-bit sensor to 8-bit output that's more typically
+        used
+        """
+        tbuf = (ct.c_ubyte * 1024)()
+        self.openCamera()
+        rc = self.dll.CxGetConvertionTab(self.h,ct.byref(tbuf))
+        self.closeCamera()
+        if rc==0:
+            print('** trouble getting 10-8 bit conversion table')
+            return None
+        return asarray(tbuf)
+
+#%%
     def startStream(self): # begin streaming acquisition
         print('starting camera stream ')
         self.openCamera()
-        if True: #not self.getStreamMode(): #this call crashes camera
+        if True:#not self.getStreamMode(): #this call crashes camera
             rc = self.dll.CxSetStreamMode(self.h, ct.c_byte(1))
             #leave connection open for streaming
             if rc==0:
@@ -249,7 +278,7 @@ class Camera:
         """
         this function prevents following commands from working (bug)
         """
-        smode = ct.c_byte()
+        smode = ct.c_ubyte() #tried ubyte and byte
         self.openCamera()
         rc=self.dll.CxGetStreamMode(self.h, ct.byref(smode)) #pointer didn't help
         self.closeCamera()
@@ -319,6 +348,9 @@ class Camera:
         return det
 
     def getCameraInfo(self):
+        """
+        this function prevents folllowing functions from working (bug)
+        """
         det = _TCameraInfo()
         self.openCamera()
         rc = self.dll.CxGetCameraInfo(self.h, ct.byref(det))
@@ -327,9 +359,28 @@ class Camera:
             print('** CxGetCameraInfo: Error getting camera info')
             return None
         #print((det.MaxWidth, det.MaxHeight))
-
         return det
+#%%
+    def getFrameCounter(self):
+        count = ct.c_uint32()
+        self.openCamera()
+        rc=self.dll.CxGetFrameCounter(self.h, ct.byref(count)) #pointer didn't help
+        self.closeCamera()
+        if rc==0:
+            print('** CxGetFrameCounter: problem checking frame number')
+            return None
+        return count.value
 
+#%%
+    def guiStartVideo(self,hwnd):
+        """ very experimental function, does not work """
+        self.openCamera()
+        #setStreamMode NOT needed per API doc
+        rc = self.dll.CxStartVideo(self.h,hwnd)
+        if rc==0:
+            print('** CxStartVideo experiment had problem')
+
+#%%
 """
 https://docs.python.org/3/library/ctypes.html#ctypes.Structure
 """
@@ -356,7 +407,7 @@ class _TCameraInfoEx(ct.Structure):
                 ("HWVersion",ct.c_ushort),
                 ("HWSerial", ct.c_ulong)]
 
-
+#%%
 class Convert:
     def __init__(self, dll=DLL):
         self.dll = ct.windll.LoadLibrary(dll)
@@ -401,6 +452,6 @@ class Convert:
         else:
             dimg = dimg[...,::-1] #reverse colors, BGR -> RGB
         return dimg
-
+#%%
 if __name__ == '__main__':
     c = Camera()
