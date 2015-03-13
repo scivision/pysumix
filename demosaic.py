@@ -27,11 +27,11 @@ try:
 except ImportError:
     print("you may not have the Sumix API installed. Try the method='ours' to fallback to non-sumix demosaic")
 
-def demosaic(img,method='ours',alg=1):
+def demosaic(img,method='ours',alg=1,color=True):
     if method.lower()=='sumix':
         return Convert().BayerToRgb(img,alg)
     else:
-        return gbrg2rgb(img)
+        return gbrg2rgb(img,color)
 
 def gbrg2rgb(img,color=True):
     """ GBRG means the upper left corner of the image has four pixels arranged like

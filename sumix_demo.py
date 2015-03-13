@@ -11,7 +11,7 @@ from os.path import splitext,expanduser
 from platform import system
 #
 from sumixapi import Camera
-from demosaic import gbrg2rgb
+from demosaic import demosaic
 platf = system().lower()
 if platf=='windows':
     from msvcrt import getwch, kbhit
@@ -19,55 +19,33 @@ if platf=='windows':
 else:
     windows = False
 
-def main(w,h,nframe,expreq, decimreq, color, set10bit, preview, verbose=False):
+def main(w,h,nframe,expos, decim, color, tenbit, preview, verbose=False):
 #%% setup camera class
-    cam = Camera(w,h,decimreq) # creates camera object
-    cam.openCamera()     # makes connection to camera
+    cam = Camera(w,h,decim,tenbit,verbose=verbose) # creates camera object and opens connection
 
     if verbose:
-        cdet = cam.getCameraInfo()
-        if cdet.SensorType==0:
+        if cam.info.SensorType==0:
             print('camera is black and white')
-        elif cdet.SensorType==1:
+        elif cam.info.SensorType==1:
             print('camera is color')
         cdetex = cam.getCameraInfoEx()
         print(cdetex.HWModelID, cdetex.HWVersion, cdetex.HWSerial)
-
-
-    if set10bit:  #FIXME just convert bool to byte instead
-        cam.set10BitsOutput(1)
-    else:
-        cam.set10BitsOutput(0)
-    tenbit = cam.get10BitsOutput()
-    if tenbit==1:
-        print(' TEN BIT mode enabled')
-    else:
-        print(' EIGHT BIT mode enabled')
 #%% sensor configuration
-    cam.setParams()
-
-    cparam = cam.getParams()
-    decim = cparam.Decimation
-    xpix = cparam.Width//decim
-    ypix = cparam.Height//decim
-    print('ROI width,height = ' + str(xpix) + ', ' + str(ypix))
-    if verbose:
-        print('color depth ' + str(cparam.ColorDeep))
-
     cam.setFrequency(1)     #set to 24MHz (fastest)
-    print('camera sensor frequency ' + str(cam.getFrequency())) #str() in case it's NOne
+    if verbose:
+        print('camera sensor frequency ' + str(cam.getFrequency())) #str() in case it's NOne
 
-    if expreq is not None and 0.2 < expreq < 10000: #need short circuit
+    if expos is not None and 0.2 < expos < 10000: #need short circuit
         if verbose:
             emin,emax = cam.getExposureMinMax()
             print('camera exposure min, max [ms] = {:0.3f}'.format(emin) + ', {:0.1f}'.format(emax))
-        cam.setExposure(expreq)
+        cam.setExposure(expos)
     exptime = cam.getExposure()
     print('exposure is {:0.3f}'.format(exptime) + ' ms.')
 #%% setup figure (for loter plotting)
     if preview:
         figure(1).clf(); fgrw = figure(1);  axrw = fgrw.gca()
-        hirw = axrw.imshow(empty((ypix,xpix), dtype=uint8),
+        hirw = axrw.imshow(empty((cam.ypix,cam.xpix), dtype=uint8),
                            origin='upper', #this is consistent with Sumix chip and tiff
                            vmin=0, vmax=256, cmap='gray')
         #fgrw.colorbar(hirw,ax=axrw)
@@ -76,9 +54,9 @@ def main(w,h,nframe,expreq, decimreq, color, set10bit, preview, verbose=False):
 #%% start acquisition
     cam.startStream()
     if nframe is None:
-        frames = freewheel(cam,xpix,ypix, color,hirw)
+        frames = freewheel(cam, color,hirw)
     elif 0 < nframe < 200:
-        frames =fixedframe(nframe,cam,xpix,ypix, color,hirw)
+        frames =fixedframe(nframe,cam, color,hirw)
     else:
         exit('*** I dont know what to do with nframe=' + str(nframe))
 #%% shutdown camera
@@ -86,13 +64,13 @@ def main(w,h,nframe,expreq, decimreq, color, set10bit, preview, verbose=False):
     cam.closeCamera()
     return frames
 #%% ===========================
-def freewheel(cam,xpix,ypix, color,hirw):
+def freewheel(cam, color,hirw):
     try:
         while True:
             frame = cam.grabFrame()
 
             if color:
-                frame = gbrg2rgb(frame, color)
+                frame = demosaic(frame, 'sumix',alg=2)
 
             if hirw is not None:
                 hirw.set_data(frame.astype(uint8))
@@ -109,18 +87,18 @@ def freewheel(cam,xpix,ypix, color,hirw):
 
     return frame
 
-def fixedframe(nframe,cam,xpix,ypix, color,hirw):
+def fixedframe(nframe,cam, color,hirw):
     if color:
-        frames = empty((nframe,ypix,xpix,3), dtype=uint8)
+        frames = empty((nframe,cam.ypix,cam.xpix,3), dtype=uint8)
     else:
-        frames = empty((nframe,ypix,xpix), dtype=uint8)
+        frames = empty((nframe,cam.ypix,cam.xpix), dtype=uint8)
 
     try:
         for i in range(nframe):
             frame = cam.grabFrame()
 
             if color:
-                frames[i,...] = gbrg2rgb(frame, color)
+                frames[i,...] = demosaic(frame, color)
             else:
                 frames[i,...] = frame
 
@@ -138,8 +116,6 @@ def saveframes(ofn,frames):
     if ofn is not None and frames is not None:
         ext = splitext(expanduser(ofn))[1].lower()
         if ext[:4] == '.tif':
-            #from skimage.io._plugins import freeimage_plugin as freeimg
-            #freeimg.write_multipage(frames, ofn)
             import tifffile
             print('tifffile write ' + ofn)
             tifffile.imsave(ofn,frames,compress=6,
@@ -157,12 +133,12 @@ if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser(description="Sumix Camera demo")
     p.add_argument('-c','--color',help='use Bayer demosaic for color camera (display only, disk writing is raw)',action='store_true')
-    p.add_argument('-d','--decim',help='decimation (binning)',type=int,default=1)
+    p.add_argument('-d','--decim',help='decimation (binning)',type=int,default=None)
     p.add_argument('-e','--exposure',help='exposure set [ms]',type=float,default=None)
     p.add_argument('-n','--nframe',help='number of images to acquire',type=int,default=None)
     p.add_argument('-f','--file',help='name of tiff file to save (non-demosaiced)',type=str,default=None)
-    p.add_argument('-x','--width',help='width in pixels of ROI',type=int,default=1280)
-    p.add_argument('-y','--height',help='height in pixels of ROI',type=int,default=1024)
+    p.add_argument('-x','--width',help='width in pixels of ROI',type=int,default=None)
+    p.add_argument('-y','--height',help='height in pixels of ROI',type=int,default=None)
     p.add_argument('-t','--tenbit',help='selects 10-bit data mode (default 8-bit)',action='store_true')
     p.add_argument('-p','--preview',help='shows live preview of images acquired',action='store_true')
     p.add_argument('-v','--verbose',help='more verbose feedback to user console',action='store_true')
