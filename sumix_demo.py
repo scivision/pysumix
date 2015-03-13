@@ -9,7 +9,6 @@ to stop free run demo, on Windows press <esc> or <space> when focused on termina
 from numpy import uint8, empty
 from os.path import splitext,expanduser
 from platform import system
-import sys
 #
 from sumixapi import Camera
 from demosaic import demosaic
@@ -20,29 +19,30 @@ if platf=='windows':
 else:
     windows = False
 
-def main(w,h,nframe,expos, decim, color, tenbit, preview, verbose=False):
+def main(w,h,nframe,expos, gain, decim, color, tenbit, preview, verbose=False):
 #%% setup camera class
     cam = Camera(w,h,decim,tenbit,verbose=verbose) # creates camera object and opens connection
 
-    if verbose:
-        if cam.info.SensorType==0:
-            print('camera is black and white')
-        elif cam.info.SensorType==1:
-            print('camera is color')
+    if verbose>1:
         cdetex = cam.getCameraInfoEx()
         print(cdetex.HWModelID, cdetex.HWVersion, cdetex.HWSerial)
 #%% sensor configuration
     cam.setFrequency(1)     #set to 24MHz (fastest)
-    if verbose:
+    if verbose>0:
         print('camera sensor frequency ' + str(cam.getFrequency())) #str() in case it's NOne
 
-    if expos is not None and 0.2 < expos < 10000: #need short circuit
-        if verbose:
-            emin,emax = cam.getExposureMinMax()
-            print('camera exposure min, max [ms] = {:0.3f}'.format(emin) + ', {:0.1f}'.format(emax))
-        cam.setExposure(expos)
+
+    if verbose>1:
+        emin,emax = cam.getExposureMinMax()
+        print('camera exposure min, max [ms] = {:0.3f}'.format(emin) + ', {:0.1f}'.format(emax))
+    cam.setExposure(expos)
     exptime = cam.getExposure()
     print('exposure is {:0.3f}'.format(exptime) + ' ms.')
+
+    cam.setAllGain(gain)
+    if verbose:
+        rgain = cam.getGain()
+        print('gains: ' + str(rgain))
 #%% setup figure (for loter plotting)
     if preview:
         figure(1).clf(); fgrw = figure(1);  axrw = fgrw.gca()
@@ -68,6 +68,9 @@ def freewheel(cam, color,hirw):
     try:
         while True:
             frame = cam.grabFrame()
+            if frame is None:
+                print('aborting acqusition due to camera communication problem')
+                break
 
             if color:
                 frame = demosaic(frame, 'ours')
@@ -152,17 +155,18 @@ if __name__ == '__main__':
     p.add_argument('-d','--decim',help='decimation (binning)',type=int,default=None)
     p.add_argument('-e','--exposure',help='exposure set [ms]',type=float,default=None)
     p.add_argument('-n','--nframe',help='number of images to acquire',type=int,default=None)
+    p.add_argument('-g','--gain',help='set gain for all channels',type=int,default=None)
     p.add_argument('-f','--file',help='name of tiff file to save (non-demosaiced)',type=str,default=None)
     p.add_argument('-x','--width',help='width in pixels of ROI',type=int,default=None)
     p.add_argument('-y','--height',help='height in pixels of ROI',type=int,default=None)
     p.add_argument('-t','--tenbit',help='selects 10-bit data mode (default 8-bit)',action='store_true')
     p.add_argument('-p','--preview',help='shows live preview of images acquired',action='store_true')
-    p.add_argument('-v','--verbose',help='more verbose feedback to user console',action='store_true')
+    p.add_argument('-v','--verbose',help='more verbose feedback to user console',type=float,default=1)
     a = p.parse_args()
 
     if a.preview:
         from matplotlib.pyplot import figure,draw,pause#, show
 
-    frames = main(a.width,a.height, a.nframe, a.exposure, a.decim, a.color, a.tenbit, a.preview, a.verbose)
+    frames = main(a.width,a.height, a.nframe, a.exposure, a.gain, a.decim, a.color, a.tenbit, a.preview, a.verbose)
 
     saveframes(a.file,frames,a.color)

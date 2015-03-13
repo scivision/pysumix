@@ -48,7 +48,7 @@ class Camera:
 
         print('ROI width,height = ' + str(self.xpix) + ', ' + str(self.ypix))
 
-        if verbose:
+        if verbose>1:
             print('color depth ' + str(cpr.ColorDeep))
 #%% 8/10 bit setup
         if tenbit:  #FIXME just convert bool to byte instead
@@ -59,7 +59,7 @@ class Camera:
         self.tenbit = self.get10BitsOutput()
         if self.tenbit==1:
             print(' TEN BIT mode enabled')
-        else:
+        elif verbose>1:
             print(' EIGHT BIT mode enabled')
 #%%
     def setParams(self,width,height,decim,startx,starty, mirrorv, mirrorh): #Set camera params
@@ -200,32 +200,64 @@ class Camera:
             if rc==0:
                 print("** CxSetExposureMs: Unable to set exposure=" + str(expreq))
 
+    def getGain(self):
+        gg1 = ct.c_int32()
+        gr  = ct.c_int32()
+        gg2 = ct.c_int32()
+        gb  = ct.c_int32()
+
+        self.openCamera()
+        rc = self.dll.CxGetGain(self.h,ct.byref(gg1),ct.byref(gr),
+                                       ct.byref(gg2),ct.byref(gb))
+        self.closeCamera()
+        if rc == 0:
+            print('** CxGetGain: could not read gain.')
+            return None
+        return {'g1':gg1.value, 'gr':gr.value, 'gg2':gg2.value, 'gb':gb.value}
+
     def setAllGain(self, gainreq): #sets gain for all colors simultaneously
         if gainreq is not None:
-
-            gain = ct.c_int32(gainreq)
-            self.openCamera()
-            rc = self.dll.CxSetAllGain(self,gain)
-            self.closeCamera()
-            if rc==0:
-                print('** unable to set gain ' + str(gainreq))
-
+            if 160 >= gainreq >= 0:
+                gain = ct.c_int32(gainreq)
+                self.openCamera()
+                rc = self.dll.CxSetAllGain(self.h,gain)
+                self.closeCamera()
+                if rc==0:
+                    print('** unable to set gain ' + str(gainreq))
+            else:
+                print(' 160 >= gain >= 0')
+#%%
     def startStream(self): # begin streaming acquisition
         print('starting camera stream ')
         self.openCamera()
-        rc = self.dll.CxSetStreamMode(self.h, ct.c_byte(1))
-        #leave connection open for streaming
-        if rc==0:
-            print('** CxSetStreamMode: unable to start camera stream')
+        if True: #not self.getStreamMode(): #this call crashes camera
+            rc = self.dll.CxSetStreamMode(self.h, ct.c_byte(1))
+            #leave connection open for streaming
+            if rc==0:
+                print('** CxSetStreamMode: unable to start camera stream')
 
     def stopStream(self): # end streaming acquisition
-        print('stopping camera stream')
+        if True: #self.getStreamMode(): #this call crashes camera
+            print('stopping camera stream')
+            self.openCamera()
+            rc=self.dll.CxSetStreamMode(self.h, ct.c_byte(0))
+            self.closeCamera()
+            if rc==0:
+                print('** CxSetStreamMode: unable to stop camera stream')
+
+    def getStreamMode(self):
+        """
+        this function prevents following commands from working (bug)
+        """
+        smode = ct.c_byte()
         self.openCamera()
-        rc=self.dll.CxSetStreamMode(self.h, ct.c_byte(0))
+        rc=self.dll.CxGetStreamMode(self.h, ct.byref(smode)) #pointer didn't help
         self.closeCamera()
         if rc==0:
-            print('** CxSetStreamMode: unable to stop camera stream')
-
+            print('** CxGetStreamMode: problem checking stream status')
+            return None
+        return bool(smode)
+#%%
     def grabFrame(self): #grab latest frame in stream
         """ for SMX-M8XC, the "color" camera passes back a grayscale image that was
          Bayer filtered--you'll need to demosaic! """
@@ -233,16 +265,20 @@ class Camera:
         imbuffer = (ct.c_ubyte * Nbuffer)()
         bufferbytes = Nbuffer # each pixel is 1 byte
 
-        if not self.isopen: self.openCamera()
+        if not self.isopen:
+            print('* grabframe: attempting to reopen camera connection')
+            self.openCamera()
+            self.startStream()
+
         rc = self.dll.CxGrabVideoFrame(self.h, ct.byref(imbuffer), bufferbytes)
         if rc==0:
-            print("** CxGrabVideoFrame: problem getting frame, return code " + str(rc))
+            print("** CxGrabVideoFrame: problem getting frame")
             return None
 
         return asarray(imbuffer).reshape((self.ypix,self.xpix), order='C')
-
+#%%
     def get10BitsOutput(self): #8 or 10 bits
-        getbit = ct.c_byte()
+        getbit = ct.c_bool()
         self.openCamera()
         rc = self.dll.CxGet10BitsOutput(self.h, ct.byref(getbit))
         self.closeCamera()
@@ -251,17 +287,17 @@ class Camera:
             return None
         return getbit.value
 
-    def set10BitsOutput(self,useten): #0=8 bit, 1=10bit
+    def set10BitsOutput(self,useten): #False=8 bit, True=10bit
         if not useten in (0,1):
             print('*** valid input is 0 for 8-bit, or 1 for 10-bit')
             return
 
         self.openCamera()
-        rc = self.dll.CxSet10BitsOutput(self.h, ct.c_byte(useten))
+        rc = self.dll.CxSet10BitsOutput(self.h, ct.c_bool(useten))
         self.closeCamera()
         if rc==0:
             print("** CxSet10BitsOutput: Error setting bit mode")
-
+#%%
     def getParams(self):
         params = _TFrameParams()
         self.openCamera()
