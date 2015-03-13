@@ -61,7 +61,7 @@ def main(w,h,nframe,expos, decim, color, tenbit, preview, verbose=False):
         exit('*** I dont know what to do with nframe=' + str(nframe))
 #%% shutdown camera
     cam.stopStream()
-    cam.closeCamera()
+
     return frames
 #%% ===========================
 def freewheel(cam, color,hirw):
