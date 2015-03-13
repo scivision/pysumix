@@ -9,6 +9,7 @@ to stop free run demo, on Windows press <esc> or <space> when focused on termina
 from numpy import uint8, empty
 from os.path import splitext,expanduser
 from platform import system
+import sys
 #
 from sumixapi import Camera
 from demosaic import demosaic
@@ -48,7 +49,6 @@ def main(w,h,nframe,expos, decim, color, tenbit, preview, verbose=False):
         hirw = axrw.imshow(empty((cam.ypix,cam.xpix), dtype=uint8),
                            origin='upper', #this is consistent with Sumix chip and tiff
                            vmin=0, vmax=256, cmap='gray')
-        #fgrw.colorbar(hirw,ax=axrw)
     else:
         hirw = None
 #%% start acquisition
@@ -70,7 +70,7 @@ def freewheel(cam, color,hirw):
             frame = cam.grabFrame()
 
             if color:
-                frame = demosaic(frame, 'sumix',alg=2)
+                frame = demosaic(frame, 'ours')
 
             if hirw is not None:
                 hirw.set_data(frame.astype(uint8))
@@ -98,7 +98,7 @@ def fixedframe(nframe,cam, color,hirw):
             frame = cam.grabFrame()
 
             if color:
-                frames[i,...] = demosaic(frame, color)
+                frames[i,...] = demosaic(frame, 'ours', color=color)
             else:
                 frames[i,...] = frame
 
@@ -112,20 +112,36 @@ def fixedframe(nframe,cam, color,hirw):
 
     return frames
 
-def saveframes(ofn,frames):
+def saveframes(ofn,frames,color):
     if ofn is not None and frames is not None:
         ext = splitext(expanduser(ofn))[1].lower()
         if ext[:4] == '.tif':
-            import tifffile
+            try:
+                import tifffile
+            except ImportError:
+                print('please install tifffile via typing in Terminal:    pip install tifffile')
+                print('doing a last-resort dump to disk in "pickle" format, read with numpy.load')
+                frames.dump(ofn)
+
             print('tifffile write ' + ofn)
+
+            pho = 'rgb' if color else 'minisblack'
+
             tifffile.imsave(ofn,frames,compress=6,
-                        photometric='minisblack', # to avoid writing RGB!
+                        photometric=pho,
                         description='my Sumix data',
                         extratags=[(65000,'s',None,'My custom tag #1',True),
                                    (65001,'s',None,'My custom tag #2',True),
                                    (65002,'f',2,[123456.789,9876.54321],True)])
+
         elif ext == '.h5':
-            import h5py
+            try:
+                import h5py
+            except ImportError:
+                print('please install h5py via typing in Terminal: pip install h5py')
+                print('doing a last-resort dump to disk in "pickle" format, read with numpy.load')
+                frames.dump(ofn)
+
             with h5py.File(ofn,libver='latest') as f:
                 f.create_dataset('/images',data=frames,compression='gzip')
 #%%
@@ -149,4 +165,4 @@ if __name__ == '__main__':
 
     frames = main(a.width,a.height, a.nframe, a.exposure, a.decim, a.color, a.tenbit, a.preview, a.verbose)
 
-    saveframes(a.file,frames)
+    saveframes(a.file,frames,a.color)

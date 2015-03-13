@@ -27,7 +27,7 @@ else:
 
 class Camera:
     def __init__(self, width=None,height=None, decim=None, tenbit=None,
-                 startx=0, starty=0, mirrorv=0,mirrorh=0,verbose=False,
+                 startx=None, starty=None, mirrorv=None,mirrorh=None,verbose=False,
                  dll=DLL):
         self.dll = ct.windll.LoadLibrary(dll)
         self.isopen = False
@@ -35,7 +35,7 @@ class Camera:
 
         self.openCamera()     # makes connection to camera
 
-        #self.info = self.getCameraInfo()
+#        self.info = self.getCameraInfo() This function can cause crashes
 #%% enact initialized settings from abvoe
         self.setParams(width,height,decim,startx,starty,mirrorv,mirrorh)
 
@@ -67,31 +67,51 @@ class Camera:
     def setParams(self,width,height,decim,startx,starty, mirrorv, mirrorh): #Set camera params
         if not self.isopen:  exit("*** Camera connection is not open")
 
+        old = self.getParams()
+
         params = _TFrameParams()
-        if startx is not None and startx>0:
-            params.StartX = ct.c_int(startx)
-        if starty is not None and starty>0:
-            params.StartY = ct.c_int(starty)
-        if width is not None and width>0:
-            params.Width  = ct.c_int(width)
+        if startx is not None and startx>=0:
+            params.StartX = ct.c_int32(startx)
+        else:
+            params.StartX = ct.c_int32(old.StartX)
+
+        if starty is not None and starty>=0:
+            params.StartY = ct.c_int32(starty)
+        else:
+            params.StartY = ct.c_int32(old.StartY)
+
+        if width is not None and width>0: #it's ok to pass odd number
+            params.Width  = ct.c_int32(width)
+        else:
+            params.Width  = ct.c_int32(old.Width)
+
         if height is not None and height>0:
-            params.Height = ct.c_int(height)
+            params.Height = ct.c_int32(height)
+        else:
+            params.Height = ct.c_int32(old.Height)
 
         if decim is not None and decim in tuple(range(1,9)):
-            params.Decimation= ct.c_int(decim)
+            params.Decimation= ct.c_int32(decim)
+        else:
+            params.Decimation= ct.c_int32(old.Decimation)
 
         if mirrorv is not None and mirrorv>0:
             params.MirrorV = ct.c_byte(mirrorv)
+        else:
+            params.MirrorV = ct.c_byte(old.MirrorV)
+
         if mirrorh is not None and mirrorh>0:
             params.MirrorH = ct.c_byte(mirrorh)
+        else:
+            params.MirrorH = ct.c_byte(old.MirrorH)
 
         rc = self.dll.CxSetScreenParams(self.h, ct.byref(params))
         if rc == 0:
             print('** CxSetScreenParams: problem setting parameter choices')
-
-        rc = self.dll.CxActivateScreenParams(self.h)
-        if rc == 0:
-            print('** CxActivateScreenParams: Problem activating parameters')
+        else:
+            rc = self.dll.CxActivateScreenParams(self.h)
+            if rc == 0:
+                print('** CxActivateScreenParams: Problem activating parameters')
 #%%
     def openCamera(self, cid=None): #attempt initial connection to camera
         if not self.isopen:
@@ -135,14 +155,16 @@ class Camera:
         freq = ct.c_byte()
         rc = self.dll.CxGetFrequency(self.h, ct.byref(freq))
         freq = freq.value
-        if rc == 0: exit("*** Unable to get sensor frequency")
+        if rc == 0:
+            print("*** CxGetFrequency: Unable to get sensor frequency")
+            return None
 
         if freq==0:
             return '12 MHz'
         elif freq==1:
             return '24 MHz'
         else:
-            print('** unknown response to CxGetFrequency')
+            print('** CxGetFrequency: unknown response to CxGetFrequency')
             return None
 
     def getExposureMinMax(self):
@@ -190,13 +212,19 @@ class Camera:
 
     def startStream(self): # begin streaming acquisition
         if not self.isopen:  exit("*** Camera connection is not open")
+        print('starting camera stream ')
 
-        return self.dll.CxSetStreamMode(self.h, ct.c_byte(1))
+        rc = self.dll.CxSetStreamMode(self.h, ct.c_byte(1))
+        if rc==0:
+            print('** CxSetStreamMode: unable to start camera stream')
 
     def stopStream(self): # end streaming acquisition
         if not self.isopen:  exit("*** Camera connection is not open")
+        print('stopping camera stream')
 
-        return self.dll.CxSetStreamMode(self.h, ct.c_byte(0))
+        rc=self.dll.CxSetStreamMode(self.h, ct.c_byte(0))
+        if rc==0:
+            print('** CxSetStreamMode: unable to stop camera stream')
 
     def grabFrame(self): #grab latest frame in stream
         """ for SMX-M8XC, the "color" camera passes back a grayscale image that was
@@ -209,7 +237,7 @@ class Camera:
 
         rc = self.dll.CxGrabVideoFrame(self.h, ct.byref(imbuffer), bufferbytes)
         if rc==0:
-            print("** problem getting frame, return code " + str(rc))
+            print("** CxGrabVideoFrame: problem getting frame, return code " + str(rc))
             return None
 
         return asarray(imbuffer).reshape((self.ypix,self.xpix), order='C')
@@ -220,16 +248,18 @@ class Camera:
         getbit = ct.c_byte()
         rc = self.dll.CxGet10BitsOutput(self.h, ct.byref(getbit))
         if rc==0:
-            print("** Error getting bit mode")
+            print("** CxGet10BitsOutput: Error getting bit mode")
+            return None
         return getbit.value
 
     def set10BitsOutput(self,useten): #0=8 bit, 1=10bit
-        if not useten in (0,1): exit('*** valid input is 0 for 8-bit, or 1 for 10-bit')
+        if not useten in (0,1):
+            print('*** valid input is 0 for 8-bit, or 1 for 10-bit')
         if not self.isopen:  exit("*** Camera connection is not open")
 
         rc = self.dll.CxSet10BitsOutput(self.h, ct.c_byte(useten))
         if rc==0:
-            print("** Error setting bit mode")
+            print("** CxSet10BitsOutput: Error setting bit mode")
 
     def getParams(self):
         if not self.isopen:  exit("*** Camera connection is not open")
@@ -253,6 +283,7 @@ class Camera:
         details = _TCameraInfo()
         self.dll.CxGetCameraInfo(self.h, ct.byref(details))
         print(details.MaxWidth)
+        print(details.MaxHeight)
         print(details.DeviceName)
 
         return details
@@ -328,3 +359,6 @@ class Convert:
         else:
             dimg = dimg[...,::-1] #reverse colors, BGR -> RGB
         return dimg
+
+if __name__ == '__main__':
+    c = Camera()
