@@ -1,12 +1,10 @@
 """
-gbrg2rgb.py
-demosaic bayer filter of type 'gbrg' using nearest neighbor interpolation
-this is a poor way of doing it, but illustrates a very basic case
+demosaic bayer filter of type 'grbg' using nearest neighbor interpolation
 michael@scivision.co
 GPLv3+
 
 input:
-assumes uint8 or uint16 raw bayer filtered gbrg input
+assumes uint8 or uint16 raw bayer filtered grbg input
 assumes 2-D I x J pixels, where a single image is I x J pixels,
         where I and J are both even numbers
 
@@ -22,21 +20,21 @@ except ImportError:
     print('E.g. for Anaconda on Windows installed to C:\Anaconda, you should have C:\Anaconda\DLLs on your Windows PATH.')
     exit()
 
-try:
-    from sumixapi import Convert
-except ImportError:
-    print("you may not have the Sumix API installed. Try the method='ours' to fallback to non-sumix demosaic")
+"""
+you may not have the Sumix API installed. Try the method='ours' to fallback to non-sumix demosaic
+"""
 
-def demosaic(img,method='ours',alg=1,color=True):
-    if method.lower()=='sumix':
+def demosaic(img,method='',alg=1,color=True):
+    if str(method).lower()=='sumix':
+        from sumixapi import Convert
         return Convert().BayerToRgb(img,alg)
     else:
-        return gbrg2rgb(img,color)
+        return grbg2rgb(img,color)
 
-def gbrg2rgb(img,color=True):
-    """ GBRG means the upper left corner of the image has four pixels arranged like
-    green  blue
-    red    green
+def grbg2rgb(img,alg=1,color=True):
+    """ GRBG means the upper left corner of the image has four pixels arranged like
+    green  red
+    blue    green
     """
     if img.ndim !=2:
         print(img.shape)
@@ -60,7 +58,13 @@ def gbrg2rgb(img,color=True):
     rgb = np.dstack((r,g,b)) #this is the way matplotlib likes it for imshow (RGB in axis=2)
 
     if color:
-        demos = zoom(rgb,(2,2,1),order=0,) #0:nearest neighbor
+        if 1<=alg<=4:
+            order=alg-1
+        else:
+            print('unknown method ' +str(alg) +' falling back to nearest neighbor alg=1')
+            order=0
+
+        demos = zoom(rgb,(2,2,1),order=order,) #0:nearest neighbor
     else: #gray
         demos = rgb2gray(rgb)
 
@@ -70,15 +74,17 @@ def rgb2gray(rgb):
     return rgb[...,:].dot([0.299,0.587,0.144]).astype(rgb.dtype)
 
 if __name__ == '__main__':
-    from matplotlib.pyplot import figure,show
-    x = (np.random.rand(10,10)*65535).astype(np.uint16)
-    y = demosaic(x)
-    print(y.shape)
-    print(y.dtype)
+    # selftest
+    from numpy.testing import assert_array_equal
+#%% test raw->color, nearest neighbor
+    testimg = np.array([[23,128],
+                        [202,27],],dtype=np.uint8)
+    testnear = demosaic(testimg,'',0)
 
-    fg = figure(); ax = fg.gca()
-    im = ax.imshow(y,interpolation='none',origin='lower')
-    fg.colorbar(im)
-    ax.set_title('rgb output')
-    show()
+    refnear = np.array([[[128,25,202],
+                        [128,25,202]],
+                       [[128,25,202],
+                        [128,25,202]]], dtype=testimg.dtype)
 
+    assert_array_equal(testnear,refnear)
+    assert testimg.dtype == testnear.dtype

@@ -5,6 +5,8 @@ michael@scivision.co
 GPLv3+ license
 to stop free run demo, on Windows press <esc> or <space> when focused on terminal window
     on Linux, press <ctrl> c (sigint)
+
+Note: this demo has only been tested in 8 bit mode, 10 bit mode is untested.
 """
 from numpy import uint8, empty
 from os.path import splitext,expanduser
@@ -34,7 +36,7 @@ def main(w,h,nframe,expos, gain, decim, color, tenbit, preview, verbose=False):
 
     if verbose>1:
         emin,emax = cam.getExposureMinMax()
-        print('camera exposure min, max [ms] = {:0.3f}'.format(emin) + ', {:0.1f}'.format(emax))
+        print('camera exposure min, max [ms] = {:.3f}, {:.1f}'.format(emin,emax))
     cam.setExposure(expos)
     exptime = cam.getExposure()
     print('exposure is {:0.3f}'.format(exptime) + ' ms.')
@@ -58,7 +60,7 @@ def main(w,h,nframe,expos, gain, decim, color, tenbit, preview, verbose=False):
     elif 0 < nframe < 200:
         frames =fixedframe(nframe,cam, color,hirw)
     else:
-        exit('*** I dont know what to do with nframe=' + str(nframe))
+        exit('*** I dont know what to do with nframe={:d}'.format(nframe))
 #%% shutdown camera
     cam.stopStream()
 

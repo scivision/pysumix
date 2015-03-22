@@ -23,21 +23,20 @@ def readimages(fn):
     elif data.ndim ==3:
         pass
     else:
-        exit('unknown number of dimensions {:0d}'.format(data.ndim))
+        exit('unknown number of dimensions {:d}'.format(data.ndim))
     return data
 
-def showimages(data,demosalg='ours'):
-    #ddim = data.shape
-
+def showimages(data,demosalg):
     fg = figure()
     ax = fg.gca()
     #without vmin, vmax it doesn't show anything!
    # hi = ax.imshow(empty((ddim[1],ddim[2],3), dtype=uint8), vmin=0, vmax=255)
     #ht = ax.set_title('')
     for i,d in enumerate(data):
-        proc = demosaic(d,demosalg,4)
+        proc = demosaic(d,demosalg,1)
        # hi.set_data(proc)
        # ht.set_text('frame: ' + str(i) )
+        ax.cla()
         if proc.ndim==2: #monochrome
             ax.imshow(proc,cmap='gray')
         else:
@@ -46,7 +45,7 @@ def showimages(data,demosalg='ours'):
 
     ax2 = figure(2).gca()
     hist(proc.ravel(),bins=128,normed=1)
-    ax2.set_title('mean: {:0.1f}'.format(data.mean()) + ' max: ' + str(data.max()))
+    ax2.set_title('mean: {:.1f},  max: {:.1f}'.format(data.mean(), data.max()))
     ax2.set_xlabel('pixel value')
     ax2.set_ylabel('density')
     show()
@@ -58,7 +57,7 @@ if __name__ == '__main__':
     p.add_argument('file',help='file to load',type=str)
     a=p.parse_args()
 
-    data = readimages(a.file) #DONT'T squeeze, so that we can iterate
+    data = readimages(a.file) #DON'T squeeze, so that we can iterate
     #showimages(data,'ours')
 
     showimages(data,'sumix')
