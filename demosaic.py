@@ -39,14 +39,17 @@ def grbg2rgb(img,alg=1,color=True):
     """
     if img.ndim !=2:
         print(img.shape)
-        exit('*** demosaic: for now, only 2-D numpy array is accepted')
+        print('*** demosaic: for now, only 2-D numpy array is accepted')
+        return None
 
     if img.shape[0] % 2 or img.shape[1] % 2:
         print(img.shape)
-        exit('*** demosaic: requires even-numbered number of pixels on both axes')
+        print('*** demosaic: requires even-numbered number of pixels on both axes')
+        return None
 
     if not img.dtype in (np.uint8, np.uint16):
-        exit('*** demosaic is currently for uint8 and uint16 input ONLY')
+        print('*** demosaic is currently for uint8 and uint16 input ONLY')
+        return None
 
    #upcast g1,g2 to avoid overflow from 8-bit or 16-bit input
     g1 = img[0::2,0::2].astype(np.uint32)
