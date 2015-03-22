@@ -30,11 +30,21 @@ The program has the option to save as multipage TIFF or HDF5 by using the ```-f`
 
 File description:
 =================
-```demosaic.py```:  Bayer demosaic for 'grbg' filters. Input/Output: 2-D uint8 or uint16 array
+``` demosaic.py ```  
+Bayer demosaic for 'grbg' filters. 
 
-```sumix_demo.py```: Sumix SMX-M8XC camera Python image acquisition and recording test program.
+Input/Output: 2-D uint8 or uint16 array
+
+By default a simple numerical method is used, however a gateway to the Sumix API is also provided should you want to use their several choices (detailed in the demosaic.py comments).
+
+``` sumix_demo.py ```: Sumix SMX-M8XC camera Python image acquisition and recording test program.
 
 ```sumixapi.py```: Wraps Sumix C Windows DLL in Python. Not every last function has been implemented or tested. Ask for more.
 
 ```test_demosaic.py```: loads TIFF or HDF5 saved files to playback video on screen.
 
+References:
+-----------
+http://www.ece.ncsu.edu/imaging/Publications/2002/demosaicking-JEI-02.pdf
+
+http://www.csee.wvu.edu/~xinl/papers/demosaicing_survey.pdf
