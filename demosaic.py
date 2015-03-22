@@ -15,7 +15,8 @@ from __future__ import division
 try:
     import numpy as np
     from scipy.ndimage.interpolation import zoom
-except ImportError:
+except ImportError as e:
+    print(e)
     print('If youre on Windows, be sure your PATH environment variable includes your Python DLLs directory.')
     print('E.g. for Anaconda on Windows installed to C:\Anaconda, you should have C:\Anaconda\DLLs on your Windows PATH.')
     exit()

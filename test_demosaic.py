@@ -15,12 +15,20 @@ def readimages(fn):
         from tifffile import imread
         data = imread(fn)
     else:
-        exit('unrecognized file type ' + ext)
+        from scipy.ndimage import imread
+        try:
+            data = imread(fn)
+        except:
+            print('unrecognized file type ' + ext)
+            return None
 
     #keep axes in preferred order
     if data.ndim == 2:
         data = data[None,:,:]
     elif data.ndim ==3:
+        #try to detect RGB images wrongly passed in
+        if data.shape[2]==3:
+            print('** check that you havent loaded an RGB image, this may not work for shape ' + str(data.shape))
         pass
     else:
         exit('unknown number of dimensions {:d}'.format(data.ndim))
