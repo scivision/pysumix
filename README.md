@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/scivision/sumix-smx-python-api.svg?branch=master)](https://travis-ci.org/scivision/sumix-smx-python-api)
 # sumix-smx-python-api
 API in Python that wraps [Sumix SMX M8X  C API](http://www.sumix.com/cameras/downloads.shtml).
 
