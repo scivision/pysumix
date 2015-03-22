@@ -75,7 +75,7 @@ def freewheel(cam, color,hirw):
                 break
 
             if color:
-                frame = demosaic(frame, 'ours')
+                frame = demosaic(frame, '')
 
             if hirw is not None:
                 hirw.set_data(frame.astype(uint8))
@@ -103,7 +103,7 @@ def fixedframe(nframe,cam, color,hirw):
             frame = cam.grabFrame()
 
             if color:
-                frames[i,...] = demosaic(frame, 'ours', color=color)
+                frames[i,...] = demosaic(frame, '', color=color)
             else:
                 frames[i,...] = frame
 
