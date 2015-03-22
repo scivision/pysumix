@@ -18,10 +18,11 @@ def readimages(fn):
         from scipy.ndimage import imread
         try:
             data = imread(fn)
-        except:
-            print('unrecognized file type ' + ext)
+        except Exception as e:
+            print(' '.join(('unrecognized file type ', ext, str(e))))
             return None
 
+    print('img shape  ' + str(data.shape))
     #keep axes in preferred order
     if data.ndim == 2:
         data = data[None,:,:]
@@ -31,7 +32,8 @@ def readimages(fn):
             print('** check that you havent loaded an RGB image, this may not work for shape ' + str(data.shape))
         pass
     else:
-        exit('unknown number of dimensions {:d}'.format(data.ndim))
+        print('unknown number of dimensions {:d}'.format(data.ndim))
+        return None
     return data
 
 def showimages(data,demosalg):
@@ -40,15 +42,18 @@ def showimages(data,demosalg):
     #without vmin, vmax it doesn't show anything!
    # hi = ax.imshow(empty((ddim[1],ddim[2],3), dtype=uint8), vmin=0, vmax=255)
     #ht = ax.set_title('')
-    for i,d in enumerate(data):
-        proc = demosaic(d,demosalg,1)
+    proc = demosaic(data,demosalg,1,False)
+    if proc is None:
+        return
+
+    for i,d in enumerate(proc):
        # hi.set_data(proc)
        # ht.set_text('frame: ' + str(i) )
         ax.cla()
-        if proc.ndim==2: #monochrome
-            ax.imshow(proc,cmap='gray')
+        if d.ndim==2: #monochrome
+            ax.imshow(d,cmap='gray')
         else:
-            ax.imshow(proc)
+            ax.imshow(d)
         draw(); pause(0.001)
 
     ax2 = figure(2).gca()

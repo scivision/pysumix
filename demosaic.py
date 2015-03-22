@@ -26,6 +26,25 @@ you may not have the Sumix API installed. Try the method='ours' to fallback to n
 """
 
 def demosaic(img,method='',alg=1,color=True):
+    if img is None:
+        return None
+
+    ndim = img.ndim
+    if ndim==2:
+        pass #normal case
+    elif ndim==3 and img.shape[-1] != 3: #normal case, iterate
+        print('demosaic: iterate over {:d} frames'.format(img.shape[0]))
+        if color:
+            dem = np.empty(img.shape+(3,),dtype=img.dtype)
+        else:
+            dem = np.empty(img.shape,dtype=img.dtype)
+        for i,f in enumerate(img):
+            dem[i,...] = demosaic(f,method,alg,color)
+        return dem
+    else:
+        print('demosaic: unsure what you want with shape ' + str(img.shape) + ' so return unmodified')
+        return img
+
     if str(method).lower()=='sumix':
         from sumixapi import Convert
         return Convert().BayerToRgb(img,alg)
@@ -81,7 +100,21 @@ def rgb2gray(rgb):
     These coefficients may not be the ones desired for your system, but may well
     be better than just averaging RGB channels.
     """
-    return np.round(rgb[...,:].dot([0.299,0.587,0.114])).astype(rgb.dtype)
+    ndim = rgb.ndim
+    if ndim==2:
+        print('rgb2gray: assuming its already gray since ndim=2')
+    elif ndim==3 and rgb.shape[-1] == 3: #this is the normal case
+        return np.round(rgb[...,:].dot([0.299,0.587,0.114])).astype(rgb.dtype)
+    elif ndim==4 and rgb.shape[-1] ==3:
+        print('rgb2gray: iterating over {:d} frames'.format(rgb.shape[0]))
+        gray = np.empty(rgb.shape[:3],dtype=rgb.dtype)
+        for i,f in enumerate(rgb):
+            gray[i,...] = rgb2gray(f)
+        return gray
+    else:
+        print('rgb2gray: unsure what you want with shape ' + str(rgb.shape) + ' so return unmodified')
+    #finally
+    return rgb
 
 if __name__ == '__main__':
     # selftest
@@ -90,20 +123,21 @@ if __name__ == '__main__':
     testimg = np.array([[23,128],
                         [202,27],],dtype=np.uint8)
 
-    testnear = demosaic(testimg,'',1,color=True)
+    # we make it artifically 1 frame of a series
+    testnear = demosaic(testimg[None,:,:],'',1,color=True)
 
     refnear = np.array([[[128,25,202],
                         [128,25,202]],
                        [[128,25,202],
-                        [128,25,202]]], dtype=testimg.dtype)
+                        [128,25,202]]], dtype=testimg.dtype)[None,:,:]
 
     assert_array_equal(testnear,refnear)
     assert testimg.dtype == testnear.dtype
 #%% test raw->mono, nearest neighbor
-    testnear = demosaic(testimg,'',1,color=False)
+    testnear = demosaic(testimg[None,:,:],'',1,color=False)
 
     refnear = np.array([[76,76],
-                        [76,76]], dtype=testimg.dtype)
+                        [76,76]], dtype=testimg.dtype)[None,:,:]
 
     assert_array_equal(testnear,refnear)
     assert testimg.dtype == testnear.dtype
