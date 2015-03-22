@@ -29,7 +29,7 @@ def demosaic(img,method='',alg=1,color=True):
         from sumixapi import Convert
         return Convert().BayerToRgb(img,alg)
     else:
-        return grbg2rgb(img,color)
+        return grbg2rgb(img,alg,color)
 
 def grbg2rgb(img,alg=1,color=True):
     """ GRBG means the upper left corner of the image has four pixels arranged like
@@ -53,25 +53,31 @@ def grbg2rgb(img,alg=1,color=True):
     r =  img[0::2,1::2]
     b =  img[1::2,0::2]
 
-    g = ((g1+g2) // 2).astype(img.dtype)
+    g = np.round(((g1+g2) / 2)).astype(img.dtype)
 
     rgb = np.dstack((r,g,b)) #this is the way matplotlib likes it for imshow (RGB in axis=2)
 
-    if color:
-        if 1<=alg<=4:
-            order=alg-1
-        else:
-            print('unknown method ' +str(alg) +' falling back to nearest neighbor alg=1')
-            order=0
 
-        demos = zoom(rgb,(2,2,1),order=order,) #0:nearest neighbor
-    else: #gray
-        demos = rgb2gray(rgb)
+    if 1<=alg<=4:
+        order=alg-1
+    else:
+        print('unknown method ' +str(alg) +' falling back to nearest neighbor alg=1')
+        order=0
+
+    demos = zoom(rgb,(2,2,1),order=order,) #0:nearest neighbor
+
+    if not color:
+        demos = rgb2gray(demos)
 
     return demos
 
 def rgb2gray(rgb):
-    return rgb[...,:].dot([0.299,0.587,0.144]).astype(rgb.dtype)
+    """
+    http://en.wikipedia.org/wiki/Grayscale#Converting_color_to_grayscale
+    These coefficients may not be the ones desired for your system, but may well
+    be better than just averaging RGB channels.
+    """
+    return np.round(rgb[...,:].dot([0.299,0.587,0.114])).astype(rgb.dtype)
 
 if __name__ == '__main__':
     # selftest
@@ -79,12 +85,21 @@ if __name__ == '__main__':
 #%% test raw->color, nearest neighbor
     testimg = np.array([[23,128],
                         [202,27],],dtype=np.uint8)
-    testnear = demosaic(testimg,'',0)
+
+    testnear = demosaic(testimg,'',1,color=True)
 
     refnear = np.array([[[128,25,202],
                         [128,25,202]],
                        [[128,25,202],
                         [128,25,202]]], dtype=testimg.dtype)
+
+    assert_array_equal(testnear,refnear)
+    assert testimg.dtype == testnear.dtype
+#%% test raw->mono, nearest neighbor
+    testnear = demosaic(testimg,'',1,color=False)
+
+    refnear = np.array([[76,76],
+                        [76,76]], dtype=testimg.dtype)
 
     assert_array_equal(testnear,refnear)
     assert testimg.dtype == testnear.dtype
