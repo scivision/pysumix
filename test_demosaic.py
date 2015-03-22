@@ -60,6 +60,6 @@ if __name__ == '__main__':
     data = readimages(a.file) #DON'T squeeze, so that we can iterate
     #showimages(data,'ours')
 
-    showimages(data,'sumix')
+    showimages(data,'')
 
 
