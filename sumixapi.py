@@ -56,6 +56,7 @@ class Camera:
             self.maxgain=160
         else: #monochrome camera
             self.maxgain=47
+
 #%% 8/10 bit setup
         if tenbit:  #FIXME just convert bool to byte instead
             self.set10BitsOutput(1)
@@ -263,7 +264,6 @@ class Camera:
             if self.verbose:
                 print(rgain)
             return rgain
-
 #%%
     def setBrightnessContrastGamma(self,bright,contrast,gamma):
         if bright is not None and contrast is not None and gamma is not None:

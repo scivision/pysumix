@@ -42,7 +42,6 @@ def main(w,h,nframe,expos, gain, decim, color, tenbit, preview, verbose=False):
     print('exposure is {:0.3f}'.format(exptime) + ' ms.')
 
     rgain = cam.setAllGain(gain)
-
 #%% setup figure (for loter plotting)
     if preview:
         figure(1).clf(); fgrw = figure(1);  axrw = fgrw.gca()
