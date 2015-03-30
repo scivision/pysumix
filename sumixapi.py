@@ -9,11 +9,11 @@ if you get WindowsError: [Error 193] %1 is not a valid Win32 application, it
 michael@scivision.co
 GPLv3+ license
 """
+from __future__ import division
 import ctypes as ct
 from numpy import asarray, atleast_1d, clip
 from os.path import join,isfile
 from platform import system
-#from time import sleep
 
 if system().lower()=='windows':
     DLL = join('c:\\','Sumix','SMX-M8x USB2.0 Camera','API','SMXM8X.dll')
