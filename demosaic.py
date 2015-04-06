@@ -15,6 +15,7 @@ from __future__ import division
 try:
     import numpy as np
     from scipy.ndimage.interpolation import zoom
+    from rgb2gray import rgb2gray
 except ImportError as e:
     print(e)
     print('If youre on Windows, be sure your PATH environment variable includes your Python DLLs directory.')
@@ -93,28 +94,6 @@ def grbg2rgb(img,alg=1,color=True):
         demos = rgb2gray(demos)
 
     return demos
-
-def rgb2gray(rgb):
-    """
-    http://en.wikipedia.org/wiki/Grayscale#Converting_color_to_grayscale
-    These coefficients may not be the ones desired for your system, but may well
-    be better than just averaging RGB channels.
-    """
-    ndim = rgb.ndim
-    if ndim==2:
-        print('rgb2gray: assuming its already gray since ndim=2')
-    elif ndim==3 and rgb.shape[-1] == 3: #this is the normal case
-        return np.round(rgb[...,:].dot([0.299,0.587,0.114])).astype(rgb.dtype)
-    elif ndim==4 and rgb.shape[-1] ==3:
-        print('rgb2gray: iterating over {:d} frames'.format(rgb.shape[0]))
-        gray = np.empty(rgb.shape[:3],dtype=rgb.dtype)
-        for i,f in enumerate(rgb):
-            gray[i,...] = rgb2gray(f)
-        return gray
-    else:
-        print('rgb2gray: unsure what you want with shape ' + str(rgb.shape) + ' so return unmodified')
-    #finally
-    return rgb
 
 if __name__ == '__main__':
     # selftest

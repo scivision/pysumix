@@ -32,10 +32,10 @@ File description:
 =================
 ``` demosaic.py ```  
 Bayer demosaic for 'grbg' filters. 
-
-Input/Output: 2-D uint8 or uint16 array
-
 By default a simple numerical method is used, however a gateway to the Sumix API is also provided should you want to use their several choices (detailed in the demosaic.py comments).
+
+``` rgb2gray.py ```
+RGB to gray, also RGBA to gray (discards alpha channel). 
 
 ``` sumix_demo.py ```: Sumix SMX-M8XC camera Python image acquisition and recording test program.
 
