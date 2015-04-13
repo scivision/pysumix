@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from numpy import around,empty, array,uint8
 
 def rgb2gray(rgb):
@@ -29,16 +28,3 @@ def rgb2gray(rgb):
         print('rgb2gray: unsure what you want with shape ' + str(rgb.shape) + ' so return unmodified')
     #finally
     return rgb
-
-if __name__ == '__main__':
-    from numpy.testing import assert_array_equal
-    #RGBA test image
-    rgba = array([[[[  76.,   76.,   76.,  255.],
-                        [  76.,   76.,   76.,  255.]],
-                       [[  76.,   76.,   76.,  255.],
-                         [  76.,   76.,   76.,  255.]]]],dtype=uint8)
-
-    testgray =  rgb2gray(rgba)
-    refalpha = array([[76,76],
-                        [76,76]], dtype=rgba.dtype)[None,:,:]
-    assert_array_equal(testgray,refalpha)

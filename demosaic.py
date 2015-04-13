@@ -94,29 +94,3 @@ def grbg2rgb(img,alg=1,color=True):
         demos = rgb2gray(demos)
 
     return demos
-
-if __name__ == '__main__':
-    # selftest
-    from numpy.testing import assert_array_equal
-#%% test raw->color, nearest neighbor
-    testimg = np.array([[23,128],
-                        [202,27],],dtype=np.uint8)
-
-    # we make it artifically 1 frame of a series
-    testnear = demosaic(testimg[None,:,:],'',1,color=True)
-
-    refnear = np.array([[[128,25,202],
-                        [128,25,202]],
-                       [[128,25,202],
-                        [128,25,202]]], dtype=testimg.dtype)[None,:,:]
-
-    assert_array_equal(testnear,refnear)
-    assert testimg.dtype == testnear.dtype
-#%% test raw->mono, nearest neighbor
-    testnear = demosaic(testimg[None,:,:],'',1,color=False)
-
-    refnear = np.array([[76,76],
-                        [76,76]], dtype=testimg.dtype)[None,:,:]
-
-    assert_array_equal(testnear,refnear)
-    assert testimg.dtype == testnear.dtype
