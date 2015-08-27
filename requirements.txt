@@ -1,2 +1,4 @@
-numpy>=1.6
-scipy>=0.10
+numpy
+scipy
+matplotlib
+h5py
