@@ -14,16 +14,17 @@ import ctypes as ct
 from numpy import asarray, atleast_1d, clip
 from os.path import join,isfile
 from platform import system
+from warnings import warn
 
 if system().lower()=='windows':
     DLL = join('c:\\','Sumix','SMX-M8x USB2.0 Camera','API','SMXM8X.dll')
 else:
-    exit('*** this driver made only for Windows, you appear to be running ' + system() )
+    raise ImportError('*** this driver made only for Windows, you appear to be running ' + system() )
 
 if isfile(DLL):
     print('using ' + DLL)
 else:
-    exit('could not find driver file ' + DLL)
+    raise ImportError('could not find driver file ' + DLL)
 
 class Camera:
     def __init__(self, width=None,height=None, decim=None, tenbit=None,
@@ -111,18 +112,18 @@ class Camera:
         self.openCamera()
         rc = self.dll.CxSetScreenParams(self.h, ct.byref(params))
         if rc == 0:
-            print('** CxSetScreenParams: problem setting parameter choices')
+            warn('CxSetScreenParams: problem setting parameter choices')
         else:
             rc = self.dll.CxActivateScreenParams(self.h)
             if rc == 0:
-                print('** CxActivateScreenParams: Problem activating parameters')
+                warn('CxActivateScreenParams: Problem activating parameters')
         self.closeCamera()
 #%%
     def openCamera(self, cid=None): #attempt initial connection to camera
         if not self.isopen:
             self.h = self.dll.CxOpenDevice(cid)
         if self.h == -1:
-            exit("*** Camera not found on open attempt with " + str(DLL))
+            raise TypeError("Camera not found on open attempt with " + str(DLL))
         else:
             self.isopen = True
 
@@ -144,13 +145,13 @@ class Camera:
         elif freqbyte == 0: #12MHz
             freq = ct.c_byte(0)
         else:
-            print('*** I can only accept 1->24MHz or 0->12MHz to set sensor frequency')
+            warn('I can only accept 1->24MHz or 0->12MHz to set sensor frequency')
             return
 
         self.openCamera()
         rc = self.dll.CxSetFrequency(self.h,freq) #not ct.byref()
         if rc == 0:
-            print("** CxSetFrequency: Unable to set sensor frequency ")
+            warn("CxSetFrequency: Unable to set sensor frequency ")
         self.closeCamera()
 
     def getFrequency(self):
@@ -159,7 +160,7 @@ class Camera:
         rc = self.dll.CxGetFrequency(self.h, ct.byref(freq))
         self.closeCamera()
         if rc == 0:
-            print("*** CxGetFrequency: Unable to get sensor frequency")
+            warn("CxGetFrequency: Unable to get sensor frequency")
             return None
 
         freq = freq.value
@@ -169,7 +170,7 @@ class Camera:
         elif freq==1:
             return '24 MHz'
         else:
-            print('** CxGetFrequency: unknown response to CxGetFrequency')
+            warn('CxGetFrequency: unknown response to CxGetFrequency')
             return None
 #%%
     def getExposureMinMax(self):
@@ -178,7 +179,7 @@ class Camera:
         rc = self.dll.CxGetExposureMinMaxMs(self.h, ct.byref(emin), ct.byref(emax))
         self.closeCamera()
         if rc == 0:
-            print("** CxGetExposureMinMaxMs: Unable to get min/max exposure")
+            warn("CxGetExposureMinMaxMs: Unable to get min/max exposure")
             return None, None
 
         return emin.value, emax.value
@@ -189,7 +190,7 @@ class Camera:
         rc = self.dll.CxGetExposureMs(self.h, ct.byref(exp))
         self.closeCamera()
         if rc==0:
-            print("*** CxGetExposureMs: Unable to get exposure")
+            warn("CxGetExposureMs: Unable to get exposure")
             return None
 
         return exp.value
@@ -197,7 +198,7 @@ class Camera:
     def setExposure(self, expreq): # set comera exposure in milliseconds
         if expreq is not None:
             if expreq<0:
-                print('** ignoring exposure request, it must be a positive number')
+                warn('ignoring exposure request, it must be a positive number')
                 return
 
             exp = ct.c_float()
@@ -205,7 +206,7 @@ class Camera:
             rc = self.dll.CxSetExposureMs(self.h, ct.c_float(expreq), ct.byref(exp))
             self.closeCamera()
             if rc==0:
-                print("** CxSetExposureMs: Unable to set exposure=" + str(expreq))
+                warn("CxSetExposureMs: Unable to set exposure=" + str(expreq))
 #%%
     def getGain(self):
         gg1 = ct.c_int32()
@@ -218,7 +219,7 @@ class Camera:
                                        ct.byref(gg2),ct.byref(gb))
         self.closeCamera()
         if rc == 0:
-            print('** CxGetGain: could not read gain.')
+            warn('CxGetGain: could not read gain.')
             return None
         return {'g1':gg1.value, 'gr':gr.value, 'gg2':gg2.value, 'gb':gb.value}
     
@@ -238,7 +239,7 @@ class Camera:
             self.closeCamera()
             
             if rc == 0:
-                print('** CxSetGain: could not set gain.')
+                warn('CxSetGain: could not set gain.')
                 return None
             #confirm gain setting
             rgain = self.getGain()				
@@ -257,7 +258,7 @@ class Camera:
             rc = self.dll.CxSetAllGain(self.h,gain)
             self.closeCamera()
             if rc==0:
-                print('** unable to set gain ' + str(gainreq))
+                warn('unable to set gain ' + str(gainreq))
                 return None
             #confirm gain setting
             rgain = self.getGain()				
@@ -275,9 +276,9 @@ class Camera:
                 rc = self.dll.CxSetBrightnessContrastGamma(self.h,b,c,g)
                 self.closeCamera()
                 if rc==0:
-                    print('** CxSetBrightnessContrastGamma: problem setting')
+                    warn('CxSetBrightnessContrastGamma: problem setting')
             else:
-                print('brightness, contrast, and gamma must be in -127..127')
+                warn('brightness, contrast, and gamma must be in -127..127')
 #%%
     def getConversionTable(self):
         """
@@ -289,7 +290,7 @@ class Camera:
         rc = self.dll.CxGetConvertionTab(self.h,ct.byref(tbuf))
         self.closeCamera()
         if rc==0:
-            print('** trouble getting 10-8 bit conversion table')
+            warn('trouble getting 10-8 bit conversion table')
             return None
         return asarray(tbuf)
 
@@ -301,7 +302,7 @@ class Camera:
             rc = self.dll.CxSetStreamMode(self.h, ct.c_byte(1))
             #leave connection open for streaming
             if rc==0:
-                print('** CxSetStreamMode: unable to start camera stream')
+                warn('CxSetStreamMode: unable to start camera stream')
 
     def stopStream(self): # end streaming acquisition
         if True: #self.getStreamMode(): #this call crashes camera
@@ -310,7 +311,7 @@ class Camera:
             rc=self.dll.CxSetStreamMode(self.h, ct.c_byte(0))
             self.closeCamera()
             if rc==0:
-                print('** CxSetStreamMode: unable to stop camera stream')
+                warn('CxSetStreamMode: unable to stop camera stream')
 
     def getStreamMode(self):
         """
@@ -321,7 +322,7 @@ class Camera:
         rc=self.dll.CxGetStreamMode(self.h, ct.byref(smode)) #pointer didn't help
         self.closeCamera()
         if rc==0:
-            print('** CxGetStreamMode: problem checking stream status')
+            warn('CxGetStreamMode: problem checking stream status')
             return None
         return bool(smode)
 #%%
@@ -339,7 +340,7 @@ class Camera:
 
         rc = self.dll.CxGrabVideoFrame(self.h, ct.byref(imbuffer), bufferbytes)
         if rc==0:
-            print("** CxGrabVideoFrame: problem getting frame")
+            warn("CxGrabVideoFrame: problem getting frame")
             return None
 
         return asarray(imbuffer).reshape((self.ypix,self.xpix), order='C')
@@ -350,20 +351,20 @@ class Camera:
         rc = self.dll.CxGet10BitsOutput(self.h, ct.byref(getbit))
         self.closeCamera()
         if rc==0:
-            print("** CxGet10BitsOutput: Error getting bit mode")
+            warn("CxGet10BitsOutput: Error getting bit mode")
             return None
         return getbit.value
 
     def set10BitsOutput(self,useten): #False=8 bit, True=10bit
         if not useten in (0,1):
-            print('*** valid input is 0 for 8-bit, or 1 for 10-bit')
+            warn('valid input is 0 for 8-bit, or 1 for 10-bit')
             return
 
         self.openCamera()
         rc = self.dll.CxSet10BitsOutput(self.h, ct.c_bool(useten))
         self.closeCamera()
         if rc==0:
-            print("** CxSet10BitsOutput: Error setting bit mode")
+            warn("CxSet10BitsOutput: Error setting bit mode")
 #%%
     def getParams(self):
         params = _TFrameParams()
@@ -371,7 +372,7 @@ class Camera:
         rc = self.dll.CxGetScreenParams(self.h, ct.byref(params))
         self.closeCamera()
         if rc==0:
-            print('** CxGetScreenParams: error getting params')
+            warn('CxGetScreenParams: error getting params')
             return None
         return params
 
@@ -381,7 +382,7 @@ class Camera:
         rc = self.dll.CxGetCameraInfoEx(self.h, ct.byref(det))
         self.closeCamera()
         if rc==0:
-            print('** CxGetCameraInfoEx: error getting camera info')
+            warn('CxGetCameraInfoEx: error getting camera info')
             return None
         return det
 
@@ -394,7 +395,7 @@ class Camera:
         rc = self.dll.CxGetCameraInfo(self.h, ct.byref(det))
         self.closeCamera()
         if rc == 0:
-            print('** CxGetCameraInfo: Error getting camera info')
+            warn('CxGetCameraInfo: Error getting camera info')
             return None
         #print((det.MaxWidth, det.MaxHeight))
         return det
@@ -405,7 +406,7 @@ class Camera:
         rc=self.dll.CxGetFrameCounter(self.h, ct.byref(count)) #pointer didn't help
         self.closeCamera()
         if rc==0:
-            print('** CxGetFrameCounter: problem checking frame number')
+            warn('CxGetFrameCounter: problem checking frame number')
             return None
         return count.value
 
@@ -416,7 +417,7 @@ class Camera:
         #setStreamMode NOT needed per API doc
         rc = self.dll.CxStartVideo(self.h,hwnd)
         if rc==0:
-            print('** CxStartVideo experiment had problem')
+            warn('CxStartVideo experiment had problem')
 
 #%%
 """
@@ -454,13 +455,13 @@ class Convert:
         if bayerimg is None: return None
 
         if bayerimg.ndim != 2:
-            print('only accepts 2-D mosaiced images')
+            warn('only accepts 2-D mosaiced images')
             return None
 
         if not bayerint in range(6):
-            print('** bayer mode must be in 0,1,2,3,4,5')
-            print('0: monochrome , 1: nearest neighbor, 2: bilinear' +
-            '3:Laplacian, 4:Real Monochrome, 5:Bayer Average')
+            warn('bayer mode must be in 0,1,2,3,4,5')
+            print('0: monochrome , 1: nearest neighbor, 2: bilinear'
+                  '3:Laplacian, 4:Real Monochrome, 5:Bayer Average')
             return None
 
         """
@@ -480,7 +481,7 @@ class Convert:
                                    Width, Height, BayerAlg,
                                    ct.byref(outbuffer))
         if rc==0:
-            print('could not convert image'); return None
+            warn('could not convert image'); return None
 
         # this is a BGR array if color
         dimg = asarray(outbuffer).reshape((h,w,3), order='C')
