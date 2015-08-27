@@ -24,6 +24,7 @@ from Terminal::
 Usage
 =====
 To acquire color images:
+
 1. plug in Sumix SMX-M8X(C) monochrome or color USB camera to your Windows PC
 2. at command prompt, type ``python sumix_demo.py -x 640 -y 480 -e 20`` that sets your exposure to 20ms, with a frame size of 640x480.
 3. you will see a live demosaiced display.
