@@ -13,13 +13,10 @@ from __future__ import division
 import ctypes as ct
 from numpy import asarray, atleast_1d, clip
 from os.path import join,isfile
-from platform import system
 from warnings import warn
 
-if system().lower()=='windows':
-    DLL = join('c:\\','Sumix','SMX-M8x USB2.0 Camera','API','SMXM8X.dll')
-else:
-    raise ImportError('*** this driver made only for Windows, you appear to be running ' + system() )
+DLL = join('c:\\','Sumix','SMX-M8x USB2.0 Camera','API','SMXM8X.dll')
+
 
 if isfile(DLL):
     print('using ' + DLL)
