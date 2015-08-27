@@ -1,5 +1,5 @@
 .. image:: https://travis-ci.org/scivision/sumix-smx-python-api.svg?branch=master
-  :target: https://travis-ci.org/scivision/sumix-smx-python-api)
+  :target: https://travis-ci.org/scivision/sumix-smx-python-api
   :alt: Build Status
 .. image:: https://coveralls.io/repos/scivision/sumix-smx-python-api/badge.svg?branch=master
   :target: https://coveralls.io/r/scivision/sumix-smx-python-api?branch=master

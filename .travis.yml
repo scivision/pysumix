@@ -20,9 +20,9 @@ install:
  
 script:  
   - if [[ -z $pyv ]]; then
-        coverage run test.py;
+        coverage run test/test.py;
     else
-        python test.py;
+        nosetests -v test/test.py;
     fi
     
 after_success:

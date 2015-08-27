@@ -10,17 +10,17 @@ assumes 2-D I x J pixels, where a single image is I x J pixels,
 
 output:
 same uint8 or uint16 shape as inpout
+
+Note:  If you're on Windows, be sure your PATH environment variable includes your Python DLLs directory.
+    E.g. for Anaconda on Windows installed to C:\Anaconda, you should have C:\Anaconda\DLLs on your Windows PATH.
+
 """
-from __future__ import division
-try:
-    import numpy as np
-    from scipy.ndimage.interpolation import zoom
-    from rgb2gray import rgb2gray
-except ImportError as e:
-    print(e)
-    print('If youre on Windows, be sure your PATH environment variable includes your Python DLLs directory.')
-    print('E.g. for Anaconda on Windows installed to C:\Anaconda, you should have C:\Anaconda\DLLs on your Windows PATH.')
-    exit()
+from __future__ import division,absolute_import
+import numpy as np
+from scipy.ndimage.interpolation import zoom
+from warnings import warn
+#
+from rgb2gray import rgb2gray
 
 """
 you may not have the Sumix API installed. Try the method='ours' to fallback to non-sumix demosaic
@@ -43,7 +43,7 @@ def demosaic(img,method='',alg=1,color=True):
             dem[i,...] = demosaic(f,method,alg,color)
         return dem
     else:
-        print('demosaic: unsure what you want with shape ' + str(img.shape) + ' so return unmodified')
+        warn('demosaic: unsure what you want with shape {} so return unmodified'.format(img.shape))
         return img
 
     if str(method).lower()=='sumix':
@@ -58,17 +58,15 @@ def grbg2rgb(img,alg=1,color=True):
     blue    green
     """
     if img.ndim !=2:
-        print(img.shape)
-        print('*** demosaic: for now, only 2-D numpy array is accepted')
+        warn('demosaic: for now, only 2-D numpy array is accepted  {}'.format(img.shape))
         return None
 
     if img.shape[0] % 2 or img.shape[1] % 2:
-        print(img.shape)
-        print('*** demosaic: requires even-numbered number of pixels on both axes')
+        warn('demosaic: requires even-numbered number of pixels on both axes   {}'.format(img.shape))
         return None
 
     if not img.dtype in (np.uint8, np.uint16):
-        print('*** demosaic is currently for uint8 and uint16 input ONLY')
+        warn('demosaic is currently for uint8 and uint16 input ONLY  {}'.format(img.shape))
         return None
 
    #upcast g1,g2 to avoid overflow from 8-bit or 16-bit input
@@ -85,7 +83,7 @@ def grbg2rgb(img,alg=1,color=True):
     if 1<=alg<=4:
         order=alg-1
     else:
-        print('unknown method ' +str(alg) +' falling back to nearest neighbor alg=1')
+        warn('unknown method {}  falling back to nearest neighbor alg=1'.format(alg))
         order=0
 
     demos = zoom(rgb,(2,2,1),order=order,) #0:nearest neighbor

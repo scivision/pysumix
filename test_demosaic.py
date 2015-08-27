@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """ testing demosaic of images"""
-from demosaic import demosaic
+from __future__ import division,absolute_import
 from matplotlib.pyplot import figure,draw,pause, hist, show
 from os.path import expanduser,splitext
+from warnings import warn
+#
+from demosaic import demosaic
 
 def readimages(fn):
     fn = expanduser(fn)
@@ -11,7 +14,7 @@ def readimages(fn):
         import h5py
         with h5py.File(fn,libver='latest',mode='r') as f:
             data = f['/images'].value
-    elif ext[:4] == '.tif':
+    elif ext.startswith('.tif'):
         from tifffile import imread
         data = imread(fn)
     else:
@@ -19,7 +22,7 @@ def readimages(fn):
         try:
             data = imread(fn)
         except Exception as e:
-            print(' '.join(('unrecognized file type ', ext, str(e))))
+            warn(' '.join(('unrecognized file type ', ext, str(e))))
             return None
 
     print('img shape  ' + str(data.shape))
@@ -29,10 +32,10 @@ def readimages(fn):
     elif data.ndim ==3:
         #try to detect RGB images wrongly passed in
         if data.shape[2]==3:
-            print('** check that you havent loaded an RGB image, this may not work for shape ' + str(data.shape))
+            warn('check that you havent loaded an RGB image, this may not work for shape ' + str(data.shape))
         pass
     else:
-        print('unknown number of dimensions {:d}'.format(data.ndim))
+        warn('unknown number of dimensions {}'.format(data.ndim))
         return None
     return data
 

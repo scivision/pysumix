@@ -8,12 +8,15 @@ to stop free run demo, on Windows press <esc> or <space> when focused on termina
 
 Note: this demo has only been tested in 8 bit mode, 10 bit mode is untested.
 """
+from __future__ import division,absolute_import
 from numpy import uint8, empty
 from os.path import splitext,expanduser
 from platform import system
+from warnings import warn
 #
 from sumixapi import Camera
 from demosaic import demosaic
+#
 platf = system().lower()
 if platf=='windows':
     from msvcrt import getwch, kbhit
@@ -57,7 +60,7 @@ def main(w,h,nframe,expos, gain, decim, color, tenbit, preview, verbose=False):
     elif 0 < nframe < 200:
         frames =fixedframe(nframe,cam, color,hirw)
     else:
-        exit('*** I dont know what to do with nframe={:d}'.format(nframe))
+        raise ValueError('I dont know what to do with nframe={:d}'.format(nframe))
 #%% shutdown camera
     cam.stopStream()
 
@@ -68,7 +71,7 @@ def freewheel(cam, color,hirw):
         while True:
             frame = cam.grabFrame()
             if frame is None:
-                print('aborting acqusition due to camera communication problem')
+                warn('aborting acqusition due to camera communication problem')
                 break
 
             if color:
@@ -121,7 +124,7 @@ def saveframes(ofn,frames,color,exptime,gain):
             try:
                 import tifffile
             except ImportError:
-                print('please install tifffile via typing in Terminal:    pip install tifffile')
+                warn('please install tifffile via typing in Terminal:    pip install tifffile')
                 print('doing a last-resort dump to disk in "pickle" format, read with numpy.load')
                 frames.dump(ofn)
 
@@ -140,7 +143,7 @@ def saveframes(ofn,frames,color,exptime,gain):
             try:
                 import h5py
             except ImportError:
-                print('please install h5py via typing in Terminal: pip install h5py')
+                warn('please install h5py via typing in Terminal: pip install h5py')
                 print('doing a last-resort dump to disk in "pickle" format, read with numpy.load')
                 frames.dump(ofn)
 
@@ -151,13 +154,13 @@ if __name__ == '__main__':
     from argparse import ArgumentParser
     p = ArgumentParser(description="Sumix Camera demo")
     p.add_argument('-c','--color',help='use Bayer demosaic for color camera (display only, disk writing is raw)',action='store_true')
-    p.add_argument('-d','--decim',help='decimation (binning)',type=int,default=None)
-    p.add_argument('-e','--exposure',help='exposure set [ms]',type=float,default=None)
-    p.add_argument('-n','--nframe',help='number of images to acquire',type=int,default=None)
-    p.add_argument('-g','--gain',help='set gain for all channels',type=int,default=None)
-    p.add_argument('-f','--file',help='name of tiff file to save (non-demosaiced)',type=str,default=None)
-    p.add_argument('-x','--width',help='width in pixels of ROI',type=int,default=None)
-    p.add_argument('-y','--height',help='height in pixels of ROI',type=int,default=None)
+    p.add_argument('-d','--decim',help='decimation (binning)',type=int)
+    p.add_argument('-e','--exposure',help='exposure set [ms]',type=float)
+    p.add_argument('-n','--nframe',help='number of images to acquire',type=int)
+    p.add_argument('-g','--gain',help='set gain for all channels',type=int)
+    p.add_argument('-f','--file',help='name of tiff file to save (non-demosaiced)')
+    p.add_argument('-x','--width',help='width in pixels of ROI',type=int)
+    p.add_argument('-y','--height',help='height in pixels of ROI',type=int)
     p.add_argument('-t','--tenbit',help='selects 10-bit data mode (default 8-bit)',action='store_true')
     p.add_argument('-p','--preview',help='shows live preview of images acquired',action='store_true')
     p.add_argument('-v','--verbose',help='more verbose feedback to user console',type=float,default=1)

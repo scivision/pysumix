@@ -1,4 +1,6 @@
-from numpy import around,empty, array,uint8
+from __future__ import division,absolute_import
+from numpy import around,empty
+from warnings import warn
 
 def rgb2gray(rgb):
     """
@@ -25,6 +27,6 @@ def rgb2gray(rgb):
             gray[i,...] = rgb2gray(f)
         return gray
     else:
-        print('rgb2gray: unsure what you want with shape ' + str(rgb.shape) + ' so return unmodified')
+        warn('rgb2gray: unsure what you want with shape ' + str(rgb.shape) + ' so return unmodified')
     #finally
     return rgb
