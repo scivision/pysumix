@@ -28,20 +28,22 @@ To acquire color images:
 2. at command prompt, type ``python sumix_demo.py -x 640 -y 480 -e 20`` that sets your exposure to 20ms, with a frame size of 640x480.
 3. you will see a live demosaiced display.
 
-The program has the option to save as multipage TIFF or HDF5 by using the ``-f`` command line option with a filename. E.g. ``python sumix_demo.py -f blah.tif``
+The program has the option to save as multipage TIFF or HDF5 by using the ``-f`` command line option with a filename::
+
+  python sumix_demo.py -f blah.tif
 
 File description
 =================
 
-=============    ==================
-File             Description
-=============    ==================
+================  =================
+File              Description
+================  =================
 demosaic.py       Bayer demosaic for 'grbg' filters. 
 rgb2gray.py       RGB to gray, also RGBA to gray (discards alpha channel). 
 sumix_demo.py     Sumix SMX-M8XC camera Python image acquisition and recording test program.
 sumixapi.py       Wraps Sumix C Windows DLL in Python. Not every last function has been implemented or tested.
 test_demosaic.py  loads TIFF or HDF5 saved files to playback video on screen.
-=============    ==================
+================  =================
 
 References
 ==========
