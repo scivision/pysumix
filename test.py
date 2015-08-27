@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from numpy.testing import assert_array_equal
 from numpy import array,uint8
+#
 from demosaic import demosaic
 #%% global
 testimg = array([[23,128],
