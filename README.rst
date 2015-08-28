@@ -48,6 +48,7 @@ Note that the default is NOT to show the live preview as the preview is computat
 
 sumix_demo.py options
 ---------------------
+
 -p --preview  show live preview (for focusing camera)
 -f --file     save multipage TIFF or HDF5 based on the file extension '.tif' '.h5'
 
