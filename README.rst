@@ -1,6 +1,5 @@
 .. image:: https://travis-ci.org/scivision/pysumix.svg?branch=master
   :target: https://travis-ci.org/scivision/pysumix
-  :alt: Build Status
 .. image:: https://coveralls.io/repos/scivision/pysumix/badge.svg?branch=master
   :target: https://coveralls.io/r/scivision/pysumix?branch=master
   :alt: Coverage Status
