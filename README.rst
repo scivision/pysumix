@@ -63,11 +63,11 @@ File description
 ================  =================
 File              Description
 ================  =================
+sumix_demo.py     Sumix SMX-M8XC camera Python image acquisition and recording test program.
+test_demosaic.py  loads TIFF or HDF5 saved files to playback video on screen (can also use ImageJ)
 demosaic.py       Bayer demosaic for 'grbg' filters.
 rgb2gray.py       RGB to gray, also RGBA to gray (discards alpha channel).
-sumix_demo.py     Sumix SMX-M8XC camera Python image acquisition and recording test program.
 sumixapi.py       Wraps Sumix C Windows DLL in Python. Not every last function has been implemented or tested.
-test_demosaic.py  loads TIFF or HDF5 saved files to playback video on screen.
 ================  =================
 
 References
