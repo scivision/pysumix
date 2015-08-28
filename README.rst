@@ -39,14 +39,17 @@ To acquire color images:
 1. plug in Sumix SMX-M8X(C) monochrome or color USB camera to your Windows PC
 2. at Command Prompt, type::
 
-    python sumix_demo.py -x 640 -y 480 -e 20
+    python sumix_demo.py -x 1024 -y 1024 -d 2 -e 20 -p
 
    that sets your exposure to 20ms, with a frame size of 640x480.
 3. you will see a live demosaiced display.
 
-The program has the option to save as multipage TIFF or HDF5 by using the ``-f`` command line option with a filename::
+Note that the default is NOT to show the live preview as the preview is computationally expensive.
 
-  python sumix_demo.py -f blah.tif
+sumix_demo.py options
+---------------------
+-p --preview  show live preview (for focusing camera)
+-f --file     save multipage TIFF or HDF5 based on the file extension '.tif' '.h5'
 
 File description
 =================

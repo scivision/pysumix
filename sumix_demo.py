@@ -149,8 +149,13 @@ def saveframes(ofn,frames,color,exptime,gain):
                 print('doing a last-resort dump to disk in "pickle" format, read with numpy.load')
                 frames.dump(ofn)
 
-            with h5py.File(ofn,libver='latest') as f:
+            with h5py.File(ofn,'w',libver='latest') as f:
                 f.create_dataset('/images',data=frames,compression='gzip')
+                fimg.attrs["CLASS"] = string_("IMAGE")
+                fimg.attrs["IMAGE_VERSION"] = string_("1.2")
+                fimg.attrs["IMAGE_SUBCLASS"] = string_("IMAGE_GRAYSCALE")
+                fimg.attrs["DISPLAY_ORIGIN"] = string_("LL")
+                fimg.attrs['IMAGE_WHITE_IS_ZERO'] = uint8(0)
 #%%
 if __name__ == '__main__':
     from argparse import ArgumentParser
@@ -174,4 +179,4 @@ if __name__ == '__main__':
     frames,exptime,gain = main(p.width,p.height, p.nframe, p.exposure, p.gain,
                           p.decim, p.color, p.tenbit, p.preview, p.verbose)
 
-    saveframes(a.file,frames,a.color, exptime,gain)
+    saveframes(p.file,frames,p.color, exptime,gain)
