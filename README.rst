@@ -1,8 +1,8 @@
-.. image:: https://travis-ci.org/scivision/sumix-smx-python-api.svg?branch=master
-  :target: https://travis-ci.org/scivision/sumix-smx-python-api
+.. image:: https://travis-ci.org/scivision/pysumix.svg?branch=master
+  :target: https://travis-ci.org/scivision/pysumix
   :alt: Build Status
-.. image:: https://coveralls.io/repos/scivision/sumix-smx-python-api/badge.svg?branch=master
-  :target: https://coveralls.io/r/scivision/sumix-smx-python-api?branch=master
+.. image:: https://coveralls.io/repos/scivision/pysumix/badge.svg?branch=master
+  :target: https://coveralls.io/r/scivision/pysumix?branch=master
   :alt: Coverage Status
 
 ======================
