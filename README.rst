@@ -14,13 +14,16 @@ API in Python that wraps `Sumix SMX M8X  C API <http://www.sumix.com/cameras/dow
 :Version: 0.1
 :Author: Michael Hirsch
 :Requires: Windows (32 or 64 bit); `Python 32-bit <https://repo.continuum.io/miniconda/Miniconda-latest-Windows-x86.exe>`_; `Sumix SMX M8X  C API <http://www.sumix.com/cameras/downloads.shtml>`_
-:Note: So far I have not seen the camera driver work properly from a virtual machine (VirtualBox). Best to run in actual Windows.
+:Note 1: So far I have not seen the camera driver work properly from a virtual machine (VirtualBox). Best to run in actual Windows.
+:Note 2: Most people rightly use 64-bit Python. You will need a 32-bit Python install; it doesn't take much hard drive space.
 
 Installation
 ============
 1. Download the `Sumix SMX M8X  C API <http://www.sumix.com/cameras/downloads.shtml>`_
     a) Extract ZIP file, run EXE as Administrator
     b) install under C:/Sumix/, NOT C:/Program Files (x86)/Sumix
+    c) plug in your Sumix SMX-M8X(C) camera into a USB 2.0 port
+    d) be sure the camera is working properly with Sumix's demo program, get familiar with setting exposure, gain, ROI, etc.
 2. download latest Python code. Can simply `download and extract zip <https://github.com/scivision/pysumix/archive/master.zip>`_ or via git::
 
       git clone --depth 1 https://github.com/scivision/sumix-smx-python-api/
