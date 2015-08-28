@@ -5,7 +5,7 @@ from matplotlib.pyplot import figure,draw,pause, hist, show
 from os.path import expanduser,splitext
 from warnings import warn
 #
-from demosaic import demosaic
+from pysumix.demosaic import demosaic
 
 def readimages(fn):
     fn = expanduser(fn)
@@ -77,5 +77,3 @@ if __name__ == '__main__':
     #showimages(data,'ours')
 
     showimages(data,'')
-
-

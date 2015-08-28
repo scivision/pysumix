@@ -2,7 +2,8 @@
 from numpy.testing import assert_array_equal
 from numpy import array,uint8
 #
-from demosaic import demosaic
+from pysumix.demosaic import demosaic
+from pysumix.rgb2gray import rgb2gray
 #%% global
 testimg = array([[23,128],
                 [202,27],],dtype=uint8)
@@ -29,7 +30,6 @@ def test_demosaic_gray():
     assert testimg.dtype == testnear.dtype
 #%% rgb2gray
 def test_rgb2gray():
-    from rgb2gray import rgb2gray
     #RGBA test image
     rgba = array([[[[  76.,   76.,   76.,  255.],
                         [  76.,   76.,   76.,  255.]],

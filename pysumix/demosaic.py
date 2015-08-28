@@ -20,7 +20,7 @@ import numpy as np
 from scipy.ndimage.interpolation import zoom
 from warnings import warn
 #
-from rgb2gray import rgb2gray
+from .rgb2gray import rgb2gray
 
 """
 you may not have the Sumix API installed. Try the method='ours' to fallback to non-sumix demosaic
@@ -34,7 +34,7 @@ def demosaic(img,method='',alg=1,color=True):
     if ndim==2:
         pass #normal case
     elif ndim==3 and img.shape[-1] != 3: #normal case, iterate
-        print('demosaic: iterate over {:d} frames'.format(img.shape[0]))
+        print('demosaic: iterate over {} frames'.format(img.shape[0]))
         if color:
             dem = np.empty(img.shape+(3,),dtype=img.dtype)
         else:

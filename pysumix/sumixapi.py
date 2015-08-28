@@ -9,20 +9,19 @@ if you get WindowsError: [Error 193] %1 is not a valid Win32 application, it
 michael@scivision.co
 GPLv3+ license
 """
-from __future__ import division
+from __future__ import division,absolute_import
 import ctypes as ct
 from numpy import asarray, atleast_1d, clip
 from os.path import join,isfile
 from warnings import warn
-
+#%%
 DLL = join('c:\\','Sumix','SMX-M8x USB2.0 Camera','API','SMXM8X.dll')
-
 
 if isfile(DLL):
     print('using ' + DLL)
 else:
     raise ImportError('could not find driver file ' + DLL)
-
+#%%
 class Camera:
     def __init__(self, width=None,height=None, decim=None, tenbit=None,
                  startx=None, starty=None, mirrorv=None,mirrorh=None,verbose=False,
@@ -49,7 +48,7 @@ class Camera:
         self.color = cpr.ColorDeep == 24
         if verbose>1:
             print('color depth ' + str(cpr.ColorDeep))
-            
+
         if self.color:
             self.maxgain=160
         else: #monochrome camera
@@ -219,27 +218,27 @@ class Camera:
             warn('CxGetGain: could not read gain.')
             return None
         return {'g1':gg1.value, 'gr':gr.value, 'gg2':gg2.value, 'gb':gb.value}
-    
+
     def setGain(self,greq):
         """
         This function not completely implemented
-        """ 
+        """
         greq = clip(atleast_1d(greq), 0, self.maxgain)
         if greq.size == 1: #monochrome /set all gain mode
             gg1 = ct.c_int32(greq)
             gr  = ct.c_int32(greq)
             gg2 = ct.c_int32(greq)
             gb  = ct.c_int32(greq)
-            
+
             self.openCamera()
             rc = self.dll.CxSetGain(self.h, gg1, gr, gg2, gb)
             self.closeCamera()
-            
+
             if rc == 0:
                 warn('CxSetGain: could not set gain.')
                 return None
             #confirm gain setting
-            rgain = self.getGain()				
+            rgain = self.getGain()
             if self.verbose:
                 print(rgain)
             return rgain
@@ -258,7 +257,7 @@ class Camera:
                 warn('unable to set gain ' + str(gainreq))
                 return None
             #confirm gain setting
-            rgain = self.getGain()				
+            rgain = self.getGain()
             if self.verbose:
                 print(rgain)
             return rgain

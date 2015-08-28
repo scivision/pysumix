@@ -30,7 +30,7 @@ Installation
 3. Ensure you have the necessary Python modules by typing in Command Prompt::
 
     conda install --file requirements.txt
-    pip install tifffile
+    python setup.py develop
 
 Usage
 =====

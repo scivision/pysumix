@@ -14,8 +14,8 @@ from os.path import splitext,expanduser
 from platform import system
 from warnings import warn
 #
-from sumixapi import Camera
-from demosaic import demosaic
+from pysumix.sumixapi import Camera
+from pysumix.demosaic import demosaic
 #
 platf = system().lower()
 if platf=='windows':
@@ -68,6 +68,8 @@ def main(w,h,nframe,expos, gain, decim, color, tenbit, preview, verbose=False):
 #%% ===========================
 def freewheel(cam, color,hirw):
     try:
+        if windows:
+            print('press Escape or Space to abort')
         while True:
             frame = cam.grabFrame()
             if frame is None:
@@ -164,12 +166,12 @@ if __name__ == '__main__':
     p.add_argument('-t','--tenbit',help='selects 10-bit data mode (default 8-bit)',action='store_true')
     p.add_argument('-p','--preview',help='shows live preview of images acquired',action='store_true')
     p.add_argument('-v','--verbose',help='more verbose feedback to user console',type=float,default=1)
-    a = p.parse_args()
+    p = p.parse_args()
 
-    if a.preview:
-        from matplotlib.pyplot import figure,draw,pause#, show
+    if p.preview:
+        from matplotlib.pyplot import figure,draw,pause
 
-    frames,exptime,gain = main(a.width,a.height, a.nframe, a.exposure, a.gain,
-                          a.decim, a.color, a.tenbit, a.preview, a.verbose)
+    frames,exptime,gain = main(p.width,p.height, p.nframe, p.exposure, p.gain,
+                          p.decim, p.color, p.tenbit, p.preview, p.verbose)
 
     saveframes(a.file,frames,a.color, exptime,gain)
