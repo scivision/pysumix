@@ -49,8 +49,13 @@ Note that the default is NOT to show the live preview as the preview is computat
 sumix_demo.py options
 ---------------------
 
--p   show live preview (for focusing camera)
--f   save multipage TIFF or HDF5 based on the file extension '.tif' '.h5'
+-p  show live preview (for focusing camera)
+-f  save multipage TIFF or HDF5 based on the file extension '.tif' '.h5'
+-e  set exposure (ms)
+-x  set ROI width
+-y  set ROI height
+-d  decimation (binning)
+-g  set image amplifier gain
 
 File description
 =================
