@@ -34,17 +34,28 @@ Installation
 
 Usage
 =====
-To acquire color images:
 
-1. plug in Sumix SMX-M8X(C) monochrome or color USB camera to your Windows PC
-2. at Command Prompt, type::
+Live stream images
+------------------
 
-    python sumix_demo.py -x 1024 -y 1024 -d 2 -e 20 -p
+1. at Command Prompt, type::
 
-   that sets your exposure to 20ms, with a frame size of 640x480.
-3. you will see a live demosaiced display.
+    python sumix_demo.py -p
+
+2. you will see a live demosaiced display.
 
 Note that the default is NOT to show the live preview as the preview is computationally expensive.
+
+Write fixed number of images to file
+------------------------------------
+
+1. at Command Prompt, type::
+
+    python sumix_demo.py -n 10 -f test.h5
+    python sumix_demo.py -n 10 -f test.tif
+
+   that is two separate acquisitions, written to HDF5 (viewable as movie with `HDFView <https://www.hdfgroup.org/products/java/release/download.html>`_)
+2. you will see a live demosaiced display.
 
 sumix_demo.py options
 ---------------------
