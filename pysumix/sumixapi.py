@@ -44,7 +44,7 @@ class Camera:
         self.starty = cpr.StartY
         self.verbose = verbose
 
-        print('ROI width,height = ' + str(self.xpix) + ', ' + str(self.ypix))
+        print('ROI width,height = {}, {}'.format(self.xpix,self.ypix))
         self.color = cpr.ColorDeep == 24
         if verbose>1:
             print('color depth ' + str(cpr.ColorDeep))

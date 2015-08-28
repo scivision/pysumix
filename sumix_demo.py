@@ -9,7 +9,7 @@ to stop free run demo, on Windows press <esc> or <space> when focused on termina
 Note: this demo has only been tested in 8 bit mode, 10 bit mode is untested.
 """
 from __future__ import division,absolute_import
-from numpy import uint8, empty
+from numpy import uint8, empty, string_
 from os.path import splitext,expanduser
 from platform import system
 from warnings import warn
@@ -30,7 +30,7 @@ def main(w,h,nframe,expos, gain, decim, color, tenbit, preview, verbose=False):
 
     if verbose>0:
         cdetex = cam.getCameraInfoEx()
-        print(cdetex.HWModelID, cdetex.HWVersion, cdetex.HWSerial)
+        print('model {}  HWversion {}  serial {}'.format(cdetex.HWModelID, cdetex.HWVersion, cdetex.HWSerial))
 #%% sensor configuration
     cam.setFrequency(1)     #set to 24MHz (fastest)
     if verbose>0:
@@ -129,6 +129,7 @@ def saveframes(ofn,frames,color,exptime,gain):
                 warn('please install tifffile via typing in Terminal:    pip install tifffile')
                 print('doing a last-resort dump to disk in "pickle" format, read with numpy.load')
                 frames.dump(ofn)
+                return
 
             print('tifffile write ' + ofn)
 
@@ -148,9 +149,10 @@ def saveframes(ofn,frames,color,exptime,gain):
                 warn('please install h5py via typing in Terminal: pip install h5py')
                 print('doing a last-resort dump to disk in "pickle" format, read with numpy.load')
                 frames.dump(ofn)
+                return
 
             with h5py.File(ofn,'w',libver='latest') as f:
-                f.create_dataset('/images',data=frames,compression='gzip')
+                fimg = f.create_dataset('/images',data=frames,compression='gzip')
                 fimg.attrs["CLASS"] = string_("IMAGE")
                 fimg.attrs["IMAGE_VERSION"] = string_("1.2")
                 fimg.attrs["IMAGE_SUBCLASS"] = string_("IMAGE_GRAYSCALE")
@@ -170,7 +172,7 @@ if __name__ == '__main__':
     p.add_argument('-y','--height',help='height in pixels of ROI',type=int)
     p.add_argument('-t','--tenbit',help='selects 10-bit data mode (default 8-bit)',action='store_true')
     p.add_argument('-p','--preview',help='shows live preview of images acquired',action='store_true')
-    p.add_argument('-v','--verbose',help='more verbose feedback to user console',type=float,default=1)
+    p.add_argument('-v','--verbose',help='more verbose feedback to user console',action='count',default=0)
     p = p.parse_args()
 
     if p.preview:
