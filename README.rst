@@ -48,14 +48,12 @@ Note that the default is NOT to show the live preview as the preview is computat
 
 Write fixed number of images to file
 ------------------------------------
-
-1. at Command Prompt, type::
+at Command Prompt, type::
 
     python sumix_demo.py -n 10 -f test.h5
-    python sumix_demo.py -n 10 -f test.tif
 
-   that is two separate acquisitions, written to HDF5 (viewable as movie with `HDFView <https://www.hdfgroup.org/products/java/release/download.html>`_)
-2. you will see a live demosaiced display.
+that is written to HDF5 (viewable with `HDFView <https://www.hdfgroup.org/products/java/release/download.html>`_)
+HDF5 is a very common format in the science and engineering community and has superceded TIFF and FITS for many applications
 
 sumix_demo.py options
 ---------------------
