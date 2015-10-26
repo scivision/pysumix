@@ -4,11 +4,9 @@ sumix-smx-python-api
 
 API in Python that wraps `Sumix SMX M8X  C API <http://www.sumix.com/cameras/downloads.shtml>`_.
 
-:Version: 0.1
 :Author: Michael Hirsch
 :Requires: Windows (32 or 64 bit); `Python 32-bit <https://repo.continuum.io/miniconda/Miniconda-latest-Windows-x86.exe>`_; `Sumix SMX M8X  C API <http://www.sumix.com/cameras/downloads.shtml>`_
-:Note 1: So far I have not seen the camera driver work properly from a virtual machine (VirtualBox). Best to run in actual Windows.
-:Note 2: Most people rightly use 64-bit Python. You will need a 32-bit Python install; it doesn't take much hard drive space.
+:Note: So far I have not seen the camera driver work properly from a virtual machine (VirtualBox). Best to run in actual Windows.
 
 .. contents::
 
@@ -33,18 +31,17 @@ Usage
 
 Live stream images
 ------------------
-
-1. at Command Prompt, type::
+::
 
     python sumix_demo.py -p
 
-2. you will see a live demosaiced display.
+To see a live demosaiced display.
 
-Note that the default is NOT to show the live preview as the preview is computationally expensive.
+Note that the default is NOT to show the live preview.
 
 Write fixed number of images to file
 ------------------------------------
-at Command Prompt, type::
+::
 
     python sumix_demo.py -n 10 -f test.h5
 
