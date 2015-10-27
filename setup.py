@@ -10,9 +10,8 @@ setup(name='pysumix',
 	  description='Sumix SMX API and data writing and live display',
 	  long_description=long_description,
 	  author='Michael Hirsch',
-	  author_email='hirsch617@gmail.com',
 	  url='https://github.com/scivision/pysumix',
-	  install_requires=['scipy','numpy','h5py','tifffile'],
+	  install_requires=['h5py','tifffile','nose'],
       packages=['pysumix'],
 	  )
 	  	  
