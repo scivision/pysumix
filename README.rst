@@ -17,25 +17,22 @@ Installation
     b) install under C:/Sumix/, NOT C:/Program Files (x86)/Sumix
     c) plug in your Sumix SMX-M8X(C) camera into a USB 2.0 port
     d) be sure the camera is working properly with Sumix's demo program, get familiar with setting exposure, gain, ROI, etc.
-2. download latest Python code. Can simply `download and extract zip <https://github.com/scivision/pysumix/archive/master.zip>`_ or via git::
+
+Then::
 
       git clone --depth 1 https://github.com/scivision/sumix-smx-python-api/
 
-3. Ensure you have the necessary Python modules by typing in Command Prompt::
-
-    conda install --file requirements.txt
-    python setup.py develop
+      python setup.py develop
 
 Usage
 =====
 
 Live stream images
 ------------------
-::
+To see a live demosaiced display::
 
     python sumix_demo.py -p
 
-To see a live demosaiced display.
 
 Note that the default is NOT to show the live preview.
 

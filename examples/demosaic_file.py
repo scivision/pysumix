@@ -1,18 +1,17 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """ testing demosaic of images"""
-from __future__ import division,absolute_import
+from pysumix import Path
 import logging
 from matplotlib.pyplot import figure,draw,pause, hist, show
-from os.path import expanduser,splitext
 #
 from pysumix.demosaic import demosaic
 
 def readimages(fn):
-    fn = expanduser(fn)
-    ext = splitext(fn)[1].lower()
+    fn = Path(fn).expanduser()
+    ext = fn.suffix.lower()
     if ext == '.h5':
         import h5py
-        with h5py.File(fn,libver='latest',mode='r') as f:
+        with h5py.File(str(fn),libver='latest',mode='r') as f:
             data = f['/images'].value
     elif ext.startswith('.tif'):
         from tifffile import imread

@@ -1,4 +1,3 @@
-from __future__ import division,absolute_import
 import logging
 from numpy import around,empty
 
@@ -28,5 +27,6 @@ def rgb2gray(rgb):
         return gray
     else:
         raise TypeError('unsure what you want with shape {}'.format(rgb.shape))
-    #finally
+
+
     return rgb

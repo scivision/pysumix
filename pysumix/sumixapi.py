@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Python API using Windows C DLL for Sumix SMX-M8X(C) cameras
 Requirements: Windows (32 or 64 bit), Python 32-bit (2.7 or 3.4)
@@ -7,20 +8,19 @@ if you get WindowsError: [Error 193] %1 is not a valid Win32 application, it
     means you're using a 64-bit Python with a 32-bit DLL. Try 32-bit Python!
 
 michael@scivision.co
-GPLv3+ license
 """
-from __future__ import division,absolute_import
+from __future__ import division
+from pysumix import Path
 import ctypes as ct
 from numpy import asarray, atleast_1d, clip
-from os.path import join,isfile
 from warnings import warn
 #%%
-DLL = join('c:\\','Sumix','SMX-M8x USB2.0 Camera','API','SMXM8X.dll')
+DLL = Path('c:')/'Sumix'/'SMX-M8x USB2.0 Camera'/'API'/'SMXM8X.dll'
 
-if isfile(DLL):
-    print('using ' + DLL)
+if DLL.is_file():
+    print('using {}'.format(DLL))
 else:
-    raise ImportError('could not find driver file ' + DLL)
+    raise ImportError('could not find driver file {}'.format(DLL))
 #%%
 class Camera:
     def __init__(self, width=None,height=None, decim=None, tenbit=None,
@@ -157,7 +157,7 @@ class Camera:
         self.closeCamera()
         if rc == 0:
             warn("CxGetFrequency: Unable to get sensor frequency")
-            return None
+            return
 
         freq = freq.value
 
@@ -167,7 +167,7 @@ class Camera:
             return '24 MHz'
         else:
             warn('CxGetFrequency: unknown response to CxGetFrequency')
-            return None
+            return
 #%%
     def getExposureMinMax(self):
         emin = ct.c_float(); emax = ct.c_float()
@@ -187,7 +187,7 @@ class Camera:
         self.closeCamera()
         if rc==0:
             warn("CxGetExposureMs: Unable to get exposure")
-            return None
+            return
 
         return exp.value
 
@@ -216,7 +216,7 @@ class Camera:
         self.closeCamera()
         if rc == 0:
             warn('CxGetGain: could not read gain.')
-            return None
+            return
         return {'g1':gg1.value, 'gr':gr.value, 'gg2':gg2.value, 'gb':gb.value}
 
     def setGain(self,greq):
@@ -236,7 +236,7 @@ class Camera:
 
             if rc == 0:
                 warn('CxSetGain: could not set gain.')
-                return None
+                return
             #confirm gain setting
             rgain = self.getGain()
             if self.verbose:
@@ -255,7 +255,7 @@ class Camera:
             self.closeCamera()
             if rc==0:
                 warn('unable to set gain ' + str(gainreq))
-                return None
+                return
             #confirm gain setting
             rgain = self.getGain()
             if self.verbose:
@@ -287,7 +287,7 @@ class Camera:
         self.closeCamera()
         if rc==0:
             warn('trouble getting 10-8 bit conversion table')
-            return None
+            return
         return asarray(tbuf)
 
 #%%
@@ -319,7 +319,7 @@ class Camera:
         self.closeCamera()
         if rc==0:
             warn('CxGetStreamMode: problem checking stream status')
-            return None
+            return
         return bool(smode)
 #%%
     def grabFrame(self): #grab latest frame in stream
@@ -337,7 +337,7 @@ class Camera:
         rc = self.dll.CxGrabVideoFrame(self.h, ct.byref(imbuffer), bufferbytes)
         if rc==0:
             warn("CxGrabVideoFrame: problem getting frame")
-            return None
+            return
 
         return asarray(imbuffer).reshape((self.ypix,self.xpix), order='C')
 #%%
@@ -348,7 +348,7 @@ class Camera:
         self.closeCamera()
         if rc==0:
             warn("CxGet10BitsOutput: Error getting bit mode")
-            return None
+            return
         return getbit.value
 
     def set10BitsOutput(self,useten): #False=8 bit, True=10bit
@@ -369,7 +369,7 @@ class Camera:
         self.closeCamera()
         if rc==0:
             warn('CxGetScreenParams: error getting params')
-            return None
+            return
         return params
 
     def getCameraInfoEx(self):
@@ -379,7 +379,7 @@ class Camera:
         self.closeCamera()
         if rc==0:
             warn('CxGetCameraInfoEx: error getting camera info')
-            return None
+            return
         return det
 
     def getCameraInfo(self):
@@ -392,7 +392,7 @@ class Camera:
         self.closeCamera()
         if rc == 0:
             warn('CxGetCameraInfo: Error getting camera info')
-            return None
+            return
         #print((det.MaxWidth, det.MaxHeight))
         return det
 #%%
@@ -403,7 +403,7 @@ class Camera:
         self.closeCamera()
         if rc==0:
             warn('CxGetFrameCounter: problem checking frame number')
-            return None
+            return
         return count.value
 
 #%%
@@ -448,17 +448,11 @@ class Convert:
         self.dll = ct.windll.LoadLibrary(dll)
 
     def BayerToRgb(self,bayerimg, bayerint):
-        if bayerimg is None: return None
+        if bayerimg is None: return
 
-        if bayerimg.ndim != 2:
-            warn('only accepts 2-D mosaiced images')
-            return None
+        assert bayerimg.ndim == 2, 'only accepts 2-D mosaiced images'
 
-        if not bayerint in range(6):
-            warn('bayer mode must be in 0,1,2,3,4,5')
-            print('0: monochrome , 1: nearest neighbor, 2: bilinear'
-                  '3:Laplacian, 4:Real Monochrome, 5:Bayer Average')
-            return None
+        assert bayerint in range(6), 'bayer mode must be in 0,1,2,3,4,5\n 0: monochrome , 1: nearest neighbor, 2: bilinear 3:Laplacian, 4:Real Monochrome, 5:Bayer Average'
 
         """
         note, even if selecting 0: Monochrome, the image returned is I X J X 3
@@ -477,7 +471,8 @@ class Convert:
                                    Width, Height, BayerAlg,
                                    ct.byref(outbuffer))
         if rc==0:
-            warn('could not convert image'); return None
+            warn('could not convert image')
+            return
 
         # this is a BGR array if color
         dimg = asarray(outbuffer).reshape((h,w,3), order='C')

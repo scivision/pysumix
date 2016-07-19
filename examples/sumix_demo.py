@@ -1,14 +1,12 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 """
 Demonstrator of Sumix camera
 michael@scivision.co
-GPLv3+ license
 to stop free run demo, on Windows press <esc> or <space> when focused on terminal window
     on Linux, press <ctrl> c (sigint)
 
 Note: this demo has only been tested in 8 bit mode, 10 bit mode is untested.
 """
-from __future__ import division,absolute_import
 #
 from pysumix.framegrabber import saveframes,runcam
 
