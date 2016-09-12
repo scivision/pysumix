@@ -14,7 +14,7 @@ from os.path import splitext,expanduser
 from platform import system
 from warnings import warn
 #
-from pysumix.sumixapi import Camera
+from pysumix import Camera
 from pysumix.demosaic import demosaic
 #
 platf = system().lower()

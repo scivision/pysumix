@@ -1,5 +1,6 @@
+setuptools
+nose
 numpy
 scipy
 matplotlib
 h5py
-psutil
