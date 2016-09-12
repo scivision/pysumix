@@ -17,7 +17,6 @@ try:
 except (ImportError,AttributeError):
     from pathlib2 import Path
 #
-from pysumix import Path
 import ctypes as ct
 from numpy import asarray, atleast_1d, clip
 from warnings import warn

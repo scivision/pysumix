@@ -21,9 +21,10 @@ import numpy as np
 from scipy.ndimage.interpolation import zoom
 #
 try:
-    from .sumixapi import Convert
-except:
-    pass
+    from . import Convert
+except Exception:
+    Convert = None
+#
 from .rgb2gray import rgb2gray
 
 """
@@ -49,7 +50,7 @@ def demosaic(img,method='',alg=1,color=True):
     else:
         raise TypeError('unsure what you want with shape {}'.format(img.shape))
 
-    if str(method).lower()=='sumix':
+    if str(method).lower()=='sumix' and Convert is not None:
         return Convert().BayerToRgb(img,alg)
     else:
         return grbg2rgb(img,alg,color)
