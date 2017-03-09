@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from numpy.testing import assert_array_equal
+from numpy.testing import assert_array_equal,run_module_suite
 from numpy import array,uint8
 #
 from pysumix.demosaic import demosaic
@@ -42,6 +42,4 @@ def test_rgb2gray():
     assert_array_equal(testgray,refalpha)
 
 if __name__ == '__main__':
-    test_demosaic_color()
-    test_demosaic_gray()
-    test_rgb2gray()
+    run_module_suite()
