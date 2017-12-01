@@ -13,6 +13,6 @@ setup(name='pysumix',
       packages=find_packages(),
       extras_require={'plot':['matplotlib'],
                       'tests':tests_require},
-      python_requires='>=2.7',
+      python_requires='>=3.5',
       tests_require=tests_require,
 	  )
