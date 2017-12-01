@@ -1,3 +1,8 @@
+.. image:: https://travis-ci.org/scivision/pysumix.svg?branch=master
+    :target: https://travis-ci.org/scivision/pysumix
+.. image:: https://coveralls.io/repos/github/scivision/pysumix/badge.svg?branch=master
+    :target: https://coveralls.io/github/scivision/pysumix?branch=master
+
 ======================
 sumix-smx-python-api
 ======================
