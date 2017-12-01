@@ -9,14 +9,6 @@ if you get WindowsError: [Error 193] %1 is not a valid Win32 application, it
 
 michael@scivision.co
 """
-from __future__ import division
-#
-try:
-    from pathlib import Path
-    Path().expanduser()
-except (ImportError,AttributeError):
-    from pathlib2 import Path
-#
 import ctypes as ct
 from numpy import asarray, atleast_1d, clip
 from warnings import warn
