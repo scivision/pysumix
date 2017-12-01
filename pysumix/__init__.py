@@ -9,6 +9,7 @@ if you get WindowsError: [Error 193] %1 is not a valid Win32 application, it
 
 michael@scivision.co
 """
+from pathlib import Path
 import ctypes as ct
 from numpy import asarray, atleast_1d, clip
 from warnings import warn
