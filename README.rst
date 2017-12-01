@@ -21,9 +21,7 @@ Installation
 
 Then::
 
-      git clone --depth 1 https://github.com/scivision/sumix-smx-python-api/
-
-      python setup.py develop
+      pip install -e .
 
 Usage
 =====
