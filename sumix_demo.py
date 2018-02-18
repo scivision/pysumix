@@ -1,16 +1,14 @@
 #!/usr/bin/env python
 """
 Demonstrator of Sumix camera
-michael@scivision.co
-GPLv3+ license
+
 to stop free run demo, on Windows press <esc> or <space> when focused on terminal window
     on Linux, press <ctrl> c (sigint)
 
 Note: this demo has only been tested in 8 bit mode, 10 bit mode is untested.
 """
-from __future__ import division,absolute_import
 from numpy import uint8, empty, string_
-from os.path import splitext,expanduser
+from pathlib import Path
 from platform import system
 from warnings import warn
 #
@@ -24,22 +22,24 @@ if platf=='windows':
 else:
     windows = False
 
+
 def main(w,h,nframe,expos, gain, decim, color, tenbit, preview, verbose=False):
 #%% setup camera class
     cam = Camera(w,h,decim,tenbit,verbose=verbose) # creates camera object and opens connection
 
     if verbose>0:
         cdetex = cam.getCameraInfoEx()
-        print('model {}  HWversion {}  serial {}'.format(cdetex.HWModelID, cdetex.HWVersion, cdetex.HWSerial))
+        print('model',cdetex.HWModelID,'HWversion',cdetex.HWVersion,'serial',cdetex.HWSerial)
 #%% sensor configuration
     cam.setFrequency(1)     #set to 24MHz (fastest)
     if verbose>0:
-        print('camera sensor frequency ' + str(cam.getFrequency())) #str() in case it's NOne
+        print('camera sensor frequency',cam.getFrequency()) #str() in case it's NOne
 
 
     if verbose>1:
         emin,emax = cam.getExposureMinMax()
         print('camera exposure min, max [ms] = {:.3f}, {:.1f}'.format(emin,emax))
+
     cam.setExposure(expos)
     exptime = cam.getExposure()
     print('exposure is {:0.3f}'.format(exptime) + ' ms.')
@@ -121,19 +121,14 @@ def fixedframe(nframe,cam, color,hirw):
 
 def saveframes(ofn,frames,color,exptime,gain):
     if ofn is not None and frames is not None:
-        ext = splitext(expanduser(ofn))[1].lower()
+        ext = Path(ofn).expanduser().suffix.lower()
         if ext[:4] == '.tif':
-            try:
-                import tifffile
-            except ImportError:
-                warn('please install tifffile via typing in Terminal:    pip install tifffile')
-                print('doing a last-resort dump to disk in "pickle" format, read with numpy.load')
-                frames.dump(ofn)
-                return
+            import tifffile
 
-            print('tifffile write ' + ofn)
+            print('write', ofn)
 
             pho = 'rgb' if color else 'minisblack'
+
             tifffile.imsave(ofn,frames,compress=6,
                         photometric=pho,
                         description=('exposure_sec {:0.3f}'.format(exptime/1000) +
@@ -143,15 +138,9 @@ def saveframes(ofn,frames,color,exptime,gain):
                                    #(65002,'f',2,[123456.789,9876.54321],True)])
 
         elif ext == '.h5':
-            try:
-                import h5py
-            except ImportError:
-                warn('please install h5py via typing in Terminal: pip install h5py')
-                print('doing a last-resort dump to disk in "pickle" format, read with numpy.load')
-                frames.dump(ofn)
-                return
+            import h5py
 
-            with h5py.File(ofn,'w',libver='latest') as f:
+            with h5py.File(ofn, 'w') as f:
                 fimg = f.create_dataset('/images',data=frames,compression='gzip')
                 fimg.attrs["CLASS"] = string_("IMAGE")
                 fimg.attrs["IMAGE_VERSION"] = string_("1.2")

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 """ testing demosaic of images"""
-from pysumix import Path
+from pathlib import Path
 import logging
+import imageio
 from matplotlib.pyplot import figure,draw,pause, hist, show
 #
 from pysumix.demosaic import demosaic
@@ -11,19 +12,12 @@ def readimages(fn):
     ext = fn.suffix.lower()
     if ext == '.h5':
         import h5py
-        with h5py.File(str(fn),libver='latest',mode='r') as f:
+        with h5py.File(fn,mode='r') as f:
             data = f['/images'].value
-    elif ext.startswith('.tif'):
-        from tifffile import imread
-        data = imread(fn)
     else:
-        from scipy.ndimage import imread
-        try:
-            data = imread(fn)
-        except Exception as e:
-            raise TypeError(' '.join(('unrecognized file type ', ext, str(e))))
+        data = imageio.imread(fn)
 
-    print('img shape  ' + str(data.shape))
+    print('img shape',data.shape)
     #keep axes in preferred order
     if data.ndim == 2:
         data = data[None,:,:]
@@ -31,8 +25,10 @@ def readimages(fn):
         if data.shape[2]==3: #try to detect RGB images wrongly passed in
             logging.warning('check that you havent loaded an RGB image, this may not work for shape ' + str(data.shape))
     else:
-        raise TypeError('unknown number of dimensions {}'.format(data.ndim))
+        raise ValueError(f'unknown number of dimensions {data.ndim}')
+
     return data
+
 
 def showimages(data,demosalg):
     fg = figure()
@@ -59,6 +55,7 @@ def showimages(data,demosalg):
     ax2.set_title('mean: {:.1f},  max: {:.1f}'.format(data.mean(), data.max()))
     ax2.set_xlabel('pixel value')
     ax2.set_ylabel('density')
+
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
