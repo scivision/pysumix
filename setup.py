@@ -5,7 +5,7 @@ install_requires = ['tifffile', 'numpy', 'scipy', 'imageio']
 tests_require = ['pytest', 'coveralls', 'flake8', 'mypy']
 
 setup(name='pysumix',
-      version='0.5.0',
+      version='0.6.0',
       description='Sumix SMX API and data writing and live display',
       long_description=open('README.md').read(),
       long_description_content_type="text/markdown",
@@ -15,7 +15,7 @@ setup(name='pysumix',
       packages=find_packages(),
       extras_require={'plot': ['matplotlib'], 'io': ['h5py', ],
                       'tests': tests_require},
-      python_requires='>=3.5',
+      python_requires='>=3.6',
       tests_require=tests_require,
       classifiers=[
           'Development Status :: 4 - Beta',
