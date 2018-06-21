@@ -1,3 +1,6 @@
+.pytest_cache/
+.mypy_cache/
+
 *.h5
 *.tif*
 
