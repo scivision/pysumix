@@ -539,8 +539,3 @@ class Convert:
         else:
             dimg = dimg[..., ::-1]  # reverse colors, BGR -> RGB
         return dimg
-
-
-# %%
-if __name__ == "__main__":
-    c = Camera()

@@ -19,7 +19,7 @@ from scipy.ndimage.interpolation import zoom
 
 #
 try:
-    from . import Convert
+    from .api import Convert
 except Exception:
     Convert = None  # type: ignore
 #

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import pytest
-from numpy.testing import assert_array_equal
+from pytest import approx
 from numpy import array, uint8
 
 #
@@ -20,7 +20,7 @@ def test_demosaic_color():
         [[[128, 25, 202], [128, 25, 202]], [[128, 25, 202], [128, 25, 202]]], dtype=testimg.dtype
     )[None, :, :]
 
-    assert_array_equal(testnear, refnear)
+    assert testnear == approx(refnear)
     assert testimg.dtype == testnear.dtype
 
 
@@ -32,7 +32,7 @@ def test_demosaic_gray():
 
     refnear = array([[76, 76], [76, 76]], dtype=testimg.dtype)[None, :, :]
 
-    assert_array_equal(testnear, refnear)
+    assert testnear == approx(refnear)
     assert testimg.dtype == testnear.dtype
 
 
@@ -53,8 +53,8 @@ def test_rgb2gray():
 
     testgray = rgb2gray(rgba)
     refalpha = array([[76, 76], [76, 76]], dtype=rgba.dtype)[None, :, :]
-    assert_array_equal(testgray, refalpha)
+    assert testgray == approx(refalpha)
 
 
 if __name__ == "__main__":
-    pytest.main(["-x", __file__])
+    pytest.main([__file__])

@@ -15,7 +15,7 @@ import logging
 from typing import Dict, Tuple
 
 #
-from pysumix import Camera
+from pysumix.api import Camera
 from pysumix.demosaic import demosaic
 
 #
