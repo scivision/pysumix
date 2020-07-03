@@ -25,20 +25,14 @@ except Exception:
 #
 from .rgb2gray import rgb2gray
 
-"""
-you may not have the Sumix API installed. Try the method='ours' to fallback to non-sumix demosaic
-"""
-
 
 def demosaic(img: np.ndarray, method: str = "", alg: int = 1, color: bool = True):
-    if img is None:
-        return
 
     ndim = img.ndim
     if ndim == 2:
         pass  # normal case
     elif ndim == 3 and img.shape[-1] != 3:  # normal case, iterate
-        logging.info("iterate over {} frames".format(img.shape[0]))
+        logging.info(f"iterate over {img.shape[0]} frames")
         if color:
             dem = np.empty(img.shape + (3,), dtype=img.dtype)
         else:
@@ -47,7 +41,7 @@ def demosaic(img: np.ndarray, method: str = "", alg: int = 1, color: bool = True
             dem[i, ...] = demosaic(f, method, alg, color)
         return dem
     else:
-        raise TypeError("unsure what you want with shape {}".format(img.shape))
+        raise ValueError(f"unsure what you want with shape {img.shape}")
 
     if str(method).lower() == "sumix" and Convert is not None:
         return Convert().BayerToRgb(img, alg)
@@ -61,19 +55,13 @@ def grbg2rgb(img: np.ndarray, alg: int = 1, color: bool = True) -> np.ndarray:
     blue    green
     """
     if img.ndim != 2:
-        raise NotImplementedError(
-            "for now, only 2-D numpy array is accepted  {}".format(img.shape)
-        )
+        raise NotImplementedError(f"for now, only 2-D Numpy ndarray is accepted {img.shape}")
 
     if img.shape[0] % 2 or img.shape[1] % 2:
-        raise TypeError(
-            "requires even-numbered number of pixels on both axes   {}".format(img.shape)
-        )
+        raise TypeError(f"requires even-numbered number of pixels on both axes {img.shape}")
 
     if img.dtype not in (np.uint8, np.uint16):
-        raise TypeError(
-            "demosaic is currently for uint8 and uint16 input ONLY  {}".format(img.shape)
-        )
+        raise TypeError(f"demosaic is currently for uint8 and uint16 input ONLY {img.shape}")
 
     # upcast g1,g2 to avoid overflow from 8-bit or 16-bit input
     g1 = img[0::2, 0::2].astype(np.uint32)

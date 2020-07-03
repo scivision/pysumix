@@ -34,9 +34,9 @@ class Camera:
         dll=DLL,
     ) -> None:
         if DLL.is_file():
-            print("using {}".format(DLL))
+            print("using", DLL)
         else:
-            raise ImportError("could not find driver file {}".format(DLL))
+            raise ImportError(f"could not find driver file {DLL}")
 
         self.dll = ct.windll.LoadLibrary(dll)  # type: ignore
         self.isopen = False
@@ -56,7 +56,7 @@ class Camera:
         self.starty = cpr.StartY
         self.verbose = verbose
 
-        print("ROI width,height = {}, {}".format(self.xpix, self.ypix))
+        print("ROI width,height =", self.xpix, self.ypix)
         self.color = cpr.ColorDeep == 24
         if verbose > 1:
             print("color depth " + str(cpr.ColorDeep))
@@ -494,9 +494,9 @@ class _TCameraInfoEx(ct.Structure):
 class Convert:
     def __init__(self, dll=DLL):
         if DLL.is_file():
-            print("using {}".format(DLL))
+            print("using", DLL)
         else:
-            raise ImportError("could not find driver file {}".format(DLL))
+            raise ImportError(f"could not find driver file {DLL}")
 
         self.dll = ct.windll.LoadLibrary(dll)
 

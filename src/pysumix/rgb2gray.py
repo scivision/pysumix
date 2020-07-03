@@ -19,14 +19,13 @@ def rgb2gray(rgb):
     elif ndim == 3 and rgb.shape[-1] == 4:
         logging.info("assuming this is an RGBA image, discarding alpha channel")
         return rgb2gray(rgb[..., :-1])
-
     elif ndim == 4 and rgb.shape[-1] in (3, 4):
-        logging.info("iterating over {} frames".format(rgb.shape[0]))
+        logging.info(f"iterating over {rgb.shape[0]} frames")
         gray = empty(rgb.shape[:3], dtype=rgb.dtype)
         for i, f in enumerate(rgb):
             gray[i, ...] = rgb2gray(f)
         return gray
     else:
-        raise TypeError("unsure what you want with shape {}".format(rgb.shape))
+        raise TypeError(f"unsure what you want with shape {rgb.shape}")
 
     return rgb
