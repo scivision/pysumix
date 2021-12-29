@@ -1,7 +1,5 @@
 # Sumix SMX Camera for Python
 
-[![Travis CI](https://travis-ci.org/scivision/pysumix.svg?branch=master)](https://travis-ci.org/scivision/pysumix)
-[![PyPi versions](https://img.shields.io/pypi/pyversions/pysumix.svg)](https://pypi.python.org/pypi/pysumix)
 [![PyPi Download stats](http://pepy.tech/badge/pysumix)](http://pepy.tech/project/pysumix)
 
 
