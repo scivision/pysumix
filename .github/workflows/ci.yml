@@ -1,0 +1,34 @@
+name: ci
+
+on:
+  push:
+    paths:
+    - "**.py"
+    - .github/workflows/ci.yml
+    - "**.toml"
+
+jobs:
+
+  ci:
+    timeout-minutes: 10
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.14"]
+        os: [windows-latest]
+
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-python@v6
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - run: pip install .[tests]
+
+    - name: type annotation check
+      if: matrix.python-version == '3.14'
+      run: mypy --non-interactive --install-types
+
+    - run: pytest
+      timeout-minutes: 2
