@@ -28,7 +28,7 @@ jobs:
 
     - name: type annotation check
       if: matrix.python-version == '3.14'
-      run: mypy --non-interactive --install-types
+      run: mypy --non-interactive --install-types src/pysumix
 
     - run: pytest
       timeout-minutes: 2

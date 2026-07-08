@@ -37,7 +37,7 @@ def get_dll_path() -> Path:
     return dll
 
 
-def get_dll_architecture(file_path: str) -> str:
+def get_dll_architecture(file_path: Path | str) -> str:
     """
     Detects if a Windows DLL/EXE is 32-bit or 64-bit by reading its PE header.
     Returns: '32-bit', '64-bit', '64-bit (ARM64)', '64-bit (Itanium)', or error string.
