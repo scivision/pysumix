@@ -67,7 +67,8 @@ def grbg2rgb(img, alg: int = 1, color: bool = True):
 
     g = np.round(((g1 + g2) / 2)).astype(img.dtype)
 
-    rgb = np.dstack((r, g, b))  # this is the way matplotlib likes it for imshow (RGB in axis=2)
+    rgb = np.dstack((r, g, b))
+    # this is the way matplotlib likes it for imshow (RGB in axis=2)
 
     if 1 <= alg <= 4:
         order = alg - 1
@@ -75,7 +76,8 @@ def grbg2rgb(img, alg: int = 1, color: bool = True):
         logging.warning(f"unknown method {alg}  falling back to nearest neighbor alg=1")
         order = 0
 
-    demos = zoom(rgb, (2, 2, 1), order=order)  # 0:nearest neighbor
+    demos = zoom(rgb, zoom=(2, 2, 1), order=order)  # type: ignore
+    # 0:nearest neighbor
 
     if not color:
         demos = rgb2gray(demos)

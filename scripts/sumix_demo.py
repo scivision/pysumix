@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Demonstrator of Sumix camera
 
@@ -87,7 +87,7 @@ def main(
 # %% ===========================
 
 
-def freewheel(cam, color: bool, hirw) -> np.ndarray:
+def freewheel(cam, color: bool, hirw):
     try:
         if os.name == "nt":
             print("press Escape or Space to abort")
@@ -117,7 +117,7 @@ def freewheel(cam, color: bool, hirw) -> np.ndarray:
     return frame
 
 
-def fixedframe(nframe: int, cam, color: bool, hirw) -> np.ndarray:
+def fixedframe(nframe: int, cam, color: bool, hirw):
     if color:
         frames = np.empty((nframe, cam.ypix, cam.xpix, 3), dtype=np.uint8)
     else:

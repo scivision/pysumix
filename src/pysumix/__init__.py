@@ -14,12 +14,58 @@ import ctypes as ct
 import numpy as np
 import logging
 import functools
+import struct
+
+MACHINE_ARCHITECTURES = {
+    0x014C: "32-bit",
+    0x8664: "64-bit",
+    0xAA64: "64-bit (ARM64)",
+    0x0200: "64-bit (Itanium)",
+}
+
 
 @functools.cache
 def get_dll_path() -> Path:
     """Get the path to the Sumix DLL."""
-    dll = Path(os.environ["SystemDrive"]) / "Sumix/SMX-M8x USB2.0 Camera/API/SMXM8X.dll"
+    dll = Path(os.environ["ProgramFiles"]) / "Sumix/SMX-M8x USB2.0 Camera/API/SMXM8X.dll"
+
+    if get_dll_architecture(dll) == "32-bit" and struct.calcsize("P") * 8 != 32:
+        raise RuntimeError(
+            "32-bit DLL detected, but Python is not 32-bit. Please use 32-bit Python."
+        )
+
     return dll
+
+
+def get_dll_architecture(file: Path | str) -> str:
+    """
+    Detects if a Windows DLL/EXE is 32-bit or 64-bit by reading its PE header.
+    Returns: '32-bit', '64-bit', '64-bit (ARM64)', '64-bit (Itanium)', or error string.
+    """
+
+    file = Path(file).expanduser().resolve(strict=True)
+
+    with file.open("rb") as f:
+        # DOS header
+        dos_header = f.read(64)
+        if len(dos_header) < 64 or dos_header[:2] != b"MZ":
+            return "Not a valid PE file"
+
+        # PE header offset
+        pe_offset = struct.unpack("<I", dos_header[0x3C:0x40])[0]
+        f.seek(pe_offset)
+
+        # PE signature + IMAGE_FILE_HEADER
+        pe_header = f.read(24)
+        if len(pe_header) < 24 or pe_header[:4] != b"PE\x00\x00":
+            return "Not a valid PE file"
+
+        machine = struct.unpack("<H", pe_header[4:6])[0]
+
+        return MACHINE_ARCHITECTURES.get(
+            machine, f"Unknown architecture (Machine=0x{machine:04X})"
+        )
+
 
 class Camera:
     def __init__(
@@ -33,8 +79,11 @@ class Camera:
         mirrorv: int | None = None,
         mirrorh: int | None = None,
         verbose: bool = False,
-        dll=get_dll_path(),
+        dll: Path | None = None,
     ) -> None:
+        if dll is None:
+            dll = get_dll_path()
+
         if dll.is_file():
             print("using", dll)
         else:
@@ -494,15 +543,17 @@ class _TCameraInfoEx(ct.Structure):
 
 
 class Convert:
-    def __init__(self, dll=get_dll_path()):
+    def __init__(self, dll=None):
+        if dll is None:
+            dll = get_dll_path()
+
         if dll.is_file():
             print("using", dll)
+            self.dll = ct.windll.LoadLibrary(dll)
         else:
-            raise ImportError(f"could not find driver file {dll}")
+            self.dll = None
 
-        self.dll = ct.windll.LoadLibrary(dll)
-
-    def BayerToRgb(self, bayerimg: np.ndarray, bayerint: int):
+    def BayerToRgb(self, bayerimg, bayerint: int):
         if bayerimg is None:
             return
 

@@ -27,4 +27,5 @@ line-length = 99
 
 [tool.mypy]
 files = ["."]
+exclude = "(^|/)build/"
 ignore_missing_imports = true
