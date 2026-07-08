@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-""" testing demosaic of images"""
+"""testing demosaic of images"""
+
 from pathlib import Path
 import logging
 import imageio

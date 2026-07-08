@@ -11,22 +11,18 @@ same uint8 or uint16 shape as inpout
 
 Note:  If you're on Windows, be sure your PATH environment variable includes your Python DLLs directory.
     E.g. Python installed to C:/Miniconda3, you should have C:/Miniconda3/DLLs on your Windows PATH.
-
 """
+
 import logging
 import numpy as np
-from scipy.ndimage.interpolation import zoom
+from scipy.ndimage import zoom
 
-#
-try:
-    from .api import Convert
-except Exception:
-    Convert = None  # type: ignore
-#
+from . import Convert
+
 from .rgb2gray import rgb2gray
 
 
-def demosaic(img: np.ndarray, method: str = "", alg: int = 1, color: bool = True):
+def demosaic(img, method: str = "", alg: int = 1, color: bool = True):
 
     ndim = img.ndim
     if ndim == 2:
@@ -43,14 +39,14 @@ def demosaic(img: np.ndarray, method: str = "", alg: int = 1, color: bool = True
     else:
         raise ValueError(f"unsure what you want with shape {img.shape}")
 
-    if str(method).lower() == "sumix" and Convert is not None:
+    if str(method).lower() == "sumix":
         return Convert().BayerToRgb(img, alg)
     else:
         return grbg2rgb(img, alg, color)
 
 
-def grbg2rgb(img: np.ndarray, alg: int = 1, color: bool = True) -> np.ndarray:
-    """ GRBG means the upper left corner of the image has four pixels arranged like
+def grbg2rgb(img, alg: int = 1, color: bool = True):
+    """GRBG means the upper left corner of the image has four pixels arranged like
     green  red
     blue    green
     """

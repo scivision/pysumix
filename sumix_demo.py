@@ -7,22 +7,19 @@ to stop free run demo, on Windows press <esc> or <space> when focused on termina
 
 Note: this demo has only been tested in 8 bit mode, 10 bit mode is untested.
 """
-from numpy import uint8, empty, string_
+
 import numpy as np
 from pathlib import Path
 import os
 import logging
-from typing import Dict, Tuple
 
 #
-from pysumix.api import Camera
+from pysumix import Camera
 from pysumix.demosaic import demosaic
 
 #
 if os.name == "nt":
-    from msvcrt import getwch, kbhit  # type: ignore
-else:
-    getwch = kbhit = None
+    from msvcrt import getwch, kbhit
 
 
 def main(
@@ -36,7 +33,7 @@ def main(
     tenbit: bool,
     preview: bool,
     verbose: bool = False,
-) -> Tuple[np.ndarray, float, Dict[str, int]]:
+) -> tuple:
     # %% setup camera class
     cam = Camera(
         w, h, decim, tenbit, verbose=verbose
@@ -65,7 +62,7 @@ def main(
         fgrw = figure(1)
         axrw = fgrw.gca()
         hirw = axrw.imshow(
-            empty((cam.ypix, cam.xpix), dtype=uint8),
+            np.empty((cam.ypix, cam.xpix), dtype=np.uint8),
             origin="upper",  # this is consistent with Sumix chip and tiff
             vmin=0,
             vmax=256,
@@ -92,7 +89,7 @@ def main(
 
 def freewheel(cam, color: bool, hirw) -> np.ndarray:
     try:
-        if kbhit is not None:
+        if os.name == "nt":
             print("press Escape or Space to abort")
         while True:
             frame = cam.grabFrame()
@@ -104,13 +101,13 @@ def freewheel(cam, color: bool, hirw) -> np.ndarray:
                 frame = demosaic(frame, "")
 
             if hirw is not None:
-                hirw.set_data(frame.astype(uint8))
+                hirw.set_data(frame.astype(np.uint8))
                 draw()
                 pause(0.001)
 
-            if kbhit is not None and kbhit():
+            if os.name == "nt" and kbhit():
                 keyputf = getwch()
-                if keyputf == u"\x1b" or keyputf == u" ":
+                if keyputf == "\x1b" or keyputf == " ":
                     print("halting acquisition due to user keypress")
                     break
 
@@ -122,9 +119,9 @@ def freewheel(cam, color: bool, hirw) -> np.ndarray:
 
 def fixedframe(nframe: int, cam, color: bool, hirw) -> np.ndarray:
     if color:
-        frames = empty((nframe, cam.ypix, cam.xpix, 3), dtype=uint8)
+        frames = np.empty((nframe, cam.ypix, cam.xpix, 3), dtype=np.uint8)
     else:
-        frames = empty((nframe, cam.ypix, cam.xpix), dtype=uint8)
+        frames = np.empty((nframe, cam.ypix, cam.xpix), dtype=np.uint8)
 
     try:
         for i in range(nframe):
@@ -136,7 +133,7 @@ def fixedframe(nframe: int, cam, color: bool, hirw) -> np.ndarray:
                 frames[i, ...] = frame
 
             if hirw is not None:
-                hirw.set_data(frames[i, ...].astype(uint8))
+                hirw.set_data(frames[i, ...].astype(np.uint8))
                 # hirw.cla()
                 # hirw.imshow(dframe)
                 draw()
@@ -147,7 +144,7 @@ def fixedframe(nframe: int, cam, color: bool, hirw) -> np.ndarray:
     return frames
 
 
-def saveframes(ofn: Path, frames, color: bool, exptime: float, gain: Dict[str, int]):
+def saveframes(ofn: Path, frames, color: bool, exptime: float, gain: dict[str, int]):
     if ofn is not None and frames is not None:
         ext = Path(ofn).expanduser().suffix.lower()
         if ext[:4] == ".tif":
@@ -157,10 +154,10 @@ def saveframes(ofn: Path, frames, color: bool, exptime: float, gain: Dict[str, i
 
             pho = "rgb" if color else "minisblack"
 
-            tifffile.imsave(
+            tifffile.imwrite(
                 ofn,
                 frames,
-                compress=6,
+                compression=6,
                 photometric=pho,
                 description=(
                     "exposure_sec {:0.3f}".format(exptime / 1000)
@@ -179,11 +176,11 @@ def saveframes(ofn: Path, frames, color: bool, exptime: float, gain: Dict[str, i
 
             with h5py.File(ofn, "w") as f:
                 fimg = f.create_dataset("/images", data=frames, compression="gzip")
-                fimg.attrs["CLASS"] = string_("IMAGE")
-                fimg.attrs["IMAGE_VERSION"] = string_("1.2")
-                fimg.attrs["IMAGE_SUBCLASS"] = string_("IMAGE_GRAYSCALE")
-                fimg.attrs["DISPLAY_ORIGIN"] = string_("LL")
-                fimg.attrs["IMAGE_WHITE_IS_ZERO"] = uint8(0)
+                fimg.attrs["CLASS"] = np.bytes_("IMAGE")
+                fimg.attrs["IMAGE_VERSION"] = np.bytes_("1.2")
+                fimg.attrs["IMAGE_SUBCLASS"] = np.bytes_("IMAGE_GRAYSCALE")
+                fimg.attrs["DISPLAY_ORIGIN"] = np.bytes_("LL")
+                fimg.attrs["IMAGE_WHITE_IS_ZERO"] = np.uint8(0)
 
 
 # %%

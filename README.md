@@ -1,6 +1,6 @@
 # Sumix SMX Camera for Python
 
-[![PyPi Download stats](http://pepy.tech/badge/pysumix)](http://pepy.tech/project/pysumix)
+[![PyPI Download stats](http://pepy.tech/badge/pysumix)](http://pepy.tech/project/pysumix)
 
 
 API in Python that wraps Sumix SMX M8X C API.
